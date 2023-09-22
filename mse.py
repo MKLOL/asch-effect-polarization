@@ -3,7 +3,8 @@ from mse_graph_calculator import *
 
 n = 20
 
-G = nx.erdos_renyi_graph(n, p=0.8)
+G = nx.star_graph(n)
+G.add_edges_from(zip(G.nodes, G.nodes))
 
 d, ls = getStoogeList(G, 20)
 

@@ -6,7 +6,7 @@ def calculateMse(G, slist, numCompute = 10000):
     W = nx.adjacency_matrix(G).toarray()
     W = W / np.sum(W, axis=0)[:, None]
 
-    A = np.diag([0.01] * n)
+    A = np.diag([1] * n)
 
     I = np.eye(n)
     X = np.linalg.pinv(I - (I - A) @ W) @ A
@@ -19,10 +19,12 @@ def calculateMse(G, slist, numCompute = 10000):
             s = np.random.normal(0, 1, n)
         else:
             s = slist
-        x = X @ s
+        xs = X @ s
 
-        s_val.append(np.mean(s) ** 2)
-        x_val.append(np.mean(x) ** 2)
+        avgs = np.mean(s)
+        avgx = np.mean(xs)
+        s_val.append(sum([(x-avgs) ** 2 for x in s]))
+        x_val.append(sum([(x-avgx) ** 2 for x in xs]))
 
     s_mse = np.mean(s_val)
     x_mse = np.mean(x_val)
