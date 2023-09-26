@@ -1,12 +1,12 @@
 import numpy as np
 import networkx as nx
 
-def calculateMse(G, slist, numCompute = 10000):
+def calculateMse(G, slist, numCompute = 100, resistances = None):
     n = len(G.nodes)
     W = nx.adjacency_matrix(G).toarray()
     W = W / np.sum(W, axis=0)[:, None]
 
-    A = np.diag([1] * n)
+    A = np.diag([0.5] * n if resistances is None else resistances)
 
     I = np.eye(n)
     X = np.linalg.pinv(I - (I - A) @ W) @ A
