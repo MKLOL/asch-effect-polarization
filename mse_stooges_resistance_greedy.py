@@ -6,10 +6,13 @@ from mse_graph_calculator import *
 def greedyResistance(G, stoogeCount, baseResistance = 0.5):
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
+
+
+    s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
     stoogeDict = {}
 
     for i in range(stoogeCount):
-        _, mse0 = calculateMse(G, None, resistances=resistances)
+        _, mse0 = calculateMse(G, s, resistances=resistances)
         print(f"Iteration {i}: MSE={mse0}")
 
         mse_max = mse0
@@ -22,7 +25,7 @@ def greedyResistance(G, stoogeCount, baseResistance = 0.5):
                 resistances1 = np.copy(resistances)
                 resistances1[x] = r
 
-                _, mse1 = calculateMse(G, None, resistances=resistances1)
+                _, mse1 = calculateMse(G, s, resistances=resistances1)
 
                 if mse1 > mse_max:
                     mse_max = mse1
@@ -36,14 +39,4 @@ def greedyResistance(G, stoogeCount, baseResistance = 0.5):
         print(f"  resistance({x_max})={r_max} (MSE={mse_max})")
 
     return resistances, mse_max
-
-
-
-n = 20
-
-# G = nx.erdos_renyi_graph(n, p=0.1)
-G = nx.star_graph(n)
-G.add_edges_from(zip(G.nodes, G.nodes))
-
-greedyResistance(G, 10)
 

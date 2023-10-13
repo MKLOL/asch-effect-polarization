@@ -16,7 +16,7 @@ def calculateMse(G, slist, numCompute = 100, resistances = None):
     for _ in range(numCompute):
         s = None
         if slist is None:
-            s = np.random.normal(0, 1, n)
+            s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
         else:
             s = slist
         xs = X @ s
