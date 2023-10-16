@@ -2,6 +2,40 @@ import numpy as np
 import networkx as nx
 
 
+def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5, x_start=None, active_nodes=None, verbose=False):
+    n = len(G.nodes)
+    x = slist if x_start is None else x_start
+
+    if active_nodes is None:
+        active_nodes = G.nodes
+    active_nodes = set(active_nodes)
+
+    for i in range(max_iterations):
+        if verbose: print(f"Iteration {i}: {np.var(x):.7f}  #active={len(active_nodes)}")
+        x_new = np.copy(x)
+
+        for u in set(active_nodes):
+            x_u = resistances[u] * slist[u]
+            x_vs = 0
+            for v in G.neighbors(u): x_vs += x[v]
+            x_u += (1 - resistances[u]) * x_vs / len(G[u])
+            x_new[u] = x_u
+
+            change = abs(x_new[u] - x[u])
+            if change > eps:
+                for v in G.neighbors(u):
+                    active_nodes.add(v)
+            else:
+                active_nodes.remove(u)
+
+        x = x_new
+        if len(active_nodes) == 0: break
+
+    # print(x)
+    x_mse = np.var(x)
+    return x_mse, x
+
+
 def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5):
     n = len(G.nodes)
     x = slist
@@ -20,12 +54,11 @@ def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5)
         if norm_inf < eps: break
         x = x_new
 
-        print(f"Iteration {i}: {norm}")
+        print(f"Iteration {i}: {np.var(x):.7f} (change={norm:.5f})")
 
     # print(x)
     x_mse = np.var(x)
-    return x_mse
-
+    return x_mse, x
 
 
 def approximateMse(G, slist, resistances=None, max_iterations=100, eps=1e-5):
