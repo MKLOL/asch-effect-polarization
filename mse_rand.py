@@ -7,7 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 
-n = 1000
+n = 100
 
 p = 0.01
 G = nx.erdos_renyi_graph(n, p=p)
@@ -15,7 +15,7 @@ G.add_edges_from(zip(G.nodes, G.nodes))
 
 
 
-walk_len = 10
+walk_len = 100
 yss = []
 
 for _ in range(5):
@@ -27,6 +27,8 @@ for _ in range(5):
     ys = greedyResistance(G, len(change_nodes), change_nodes=change_nodes)
     yss.append(ys)
 
+maxlen = max(map(len, yss))
+yss = [ys + [ys[-1]] * (maxlen - len(ys)) for ys in yss]
 
 yss = np.array(yss)
 ys_mean = np.mean(yss, axis=0)
