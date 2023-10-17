@@ -2,6 +2,11 @@ import numpy as np
 import networkx as nx
 
 
+# random nodes
+# high-degree nodes
+# high-influence (? maybe 2nd degree) 
+
+
 def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5, x_start=None, active_nodes=None, verbose=False):
     n = len(G.nodes)
     x = slist if x_start is None else x_start

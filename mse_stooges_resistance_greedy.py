@@ -3,40 +3,49 @@ import networkx as nx
 from mse_graph_calculator import *
 
 
-def greedyResistance(G, stoogeCount, baseResistance = 0.5):
+def greedyResistance(G, stoogeCount, baseResistance=0.5, change_nodes=None):
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
 
-
     s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
     stoogeDict = {}
+    change_nodes = G.nodes if change_nodes is None else change_nodes
+
+    x_start = None
+    active_nodes = None
+
+    mse0s = []
 
     for i in range(stoogeCount):
-        _, mse0 = calculateMse(G, s, resistances=resistances)
-        print(f"Iteration {i}: MSE={mse0}")
+        mse0, x_start = approximateMseFaster(G, s, resistances=resistances, x_start=x_start, active_nodes=active_nodes)
+        mse0s.append(mse0)
+        print(f">>> Iteration {i}: MSE={mse0}")
 
         mse_max = mse0
         x_max = None
         r_max = None
 
-        for x in range(n):
+        for x in change_nodes:
             if x in stoogeDict: continue
             for r in [0, 1]:
                 resistances1 = np.copy(resistances)
                 resistances1[x] = r
 
-                _, mse1 = calculateMse(G, s, resistances=resistances1)
+                mse1, _ = approximateMseFaster(G, s, resistances=resistances1, x_start=x_start, active_nodes=[x])
 
                 if mse1 > mse_max:
                     mse_max = mse1
                     x_max = x
                     r_max = r
 
+            print(".", end="", flush=True)
+            # if (n - x) % 10 == 0: print(f"    {n - x} remaining")
+
         if x_max is None: break
 
         resistances[x_max] = r_max
         stoogeDict[x_max] = True
-        print(f"  resistance({x_max})={r_max} (MSE={mse_max})")
+        print(f"\n>>> resistance({x_max})={r_max} (MSE={mse_max})")
 
-    return resistances, mse_max
+    return mse0s # resistances, mse_max
 
