@@ -3,7 +3,7 @@ import networkx as nx
 from mse_graph_calculator import *
 
 
-def greedyResistance(G, stoogeCount, baseResistance=0.5, change_nodes=None):
+def greedyResistance(G, stoogeCount, baseResistance=0.5, change_nodes=None, verbose=True):
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
 
@@ -19,7 +19,7 @@ def greedyResistance(G, stoogeCount, baseResistance=0.5, change_nodes=None):
     for i in range(stoogeCount):
         mse0, x_start = approximateMseFaster(G, s, resistances=resistances, x_start=x_start, active_nodes=active_nodes)
         mse0s.append(mse0)
-        print(f">>> Iteration {i}: MSE={mse0}")
+        if verbose: print(f">>> Iteration {i}: MSE={mse0}")
 
         mse_max = mse0
         x_max = None
@@ -38,14 +38,14 @@ def greedyResistance(G, stoogeCount, baseResistance=0.5, change_nodes=None):
                     x_max = x
                     r_max = r
 
-            print(".", end="", flush=True)
+            if verbose: print(".", end="", flush=True)
             # if (n - x) % 10 == 0: print(f"    {n - x} remaining")
 
         if x_max is None: break
 
         resistances[x_max] = r_max
         stoogeDict[x_max] = True
-        print(f"\n>>> resistance({x_max})={r_max} (MSE={mse_max})")
+        if verbose: print(f"\n>>> resistance({x_max})={r_max} (MSE={mse_max})")
 
     return mse0s # resistances, mse_max
 

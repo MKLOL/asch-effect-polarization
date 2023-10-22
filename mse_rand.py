@@ -5,41 +5,63 @@ from mse_stooges_resistance_greedy import *
 from mse_stooges_mega_greeedy import *
 import networkx as nx
 import matplotlib.pyplot as plt
+import pandas as pd
+import itertools
+from preselection import *
+import functools
+
+
+@functools.lru_cache(maxsize=None)
+def generate_gnp(n, p):
+    G = nx.erdos_renyi_graph(n, p=p)
+    G.add_edges_from(zip(G.nodes, G.nodes))
+    return G
+
+
+def test(n, p, k, preselect, max_repeat=50, eps=0.001):
+    G = generate_gnp(n, p)
+
+    yss = []
+    for i in range(max_repeat):
+        change_nodes = preselect(G, k)
+        ys = greedyResistance(G, len(change_nodes), change_nodes=change_nodes, verbose=False)
+        yss.append(ys)
+        if i > 5 and (np.var([ys[-1] for ys in yss]) < 0.1 * i * eps**2): break
+        print(f"{i}: {np.std([ys[-1] for ys in yss]) / np.sqrt(0.1 * i) :.10f}")
+
+    maxlen = max(map(len, yss))
+    yss = [ys + [ys[-1]] * (maxlen - len(ys)) for ys in yss]
+
+    return np.array(yss)
+
+
+def add_plot(yss, label, std_scale=0.2):
+    yss = test(n, p, k, preselect_walk_0)
+    yss_mean = np.mean(yss, axis=0)
+    yss_std = np.std(yss, axis=0)
+    xs = np.arange(1, len(yss_mean) + 1)
+
+    plt.plot(xs, yss_mean, label=label)
+    plt.fill_between(xs, yss_mean - std_scale * yss_std, yss_mean + std_scale * yss_std, alpha=0.2)
 
 
 n = 100
+p = 0.1
+k = 10
 
-p = 0.01
-G = nx.erdos_renyi_graph(n, p=p)
-G.add_edges_from(zip(G.nodes, G.nodes))
+add_plot(test(n, p, k, preselect_walk_0), "walk_len=0")
+add_plot(test(n, p, k, preselect_walk_5), "walk_len=5")
+add_plot(test(n, p, k, preselect_walk_10), "walk_len=10")
+add_plot(test(n, p, k, preselect_walk_50), "walk_len=50")
+add_plot(test(n, p, k, preselect_centrality), "centrality")
 
 
-
-walk_len = 100
-yss = []
-
-for _ in range(5):
-    change_nodes = np.random.choice(G.nodes, 20)
-    for i, u in enumerate(change_nodes):
-        for _ in range(walk_len): u = np.random.choice(list(G.neighbors(u)))
-        change_nodes[i] = u
-
-    ys = greedyResistance(G, len(change_nodes), change_nodes=change_nodes)
-    yss.append(ys)
-
-maxlen = max(map(len, yss))
-yss = [ys + [ys[-1]] * (maxlen - len(ys)) for ys in yss]
-
-yss = np.array(yss)
-ys_mean = np.mean(yss, axis=0)
-ys_std = np.std(yss, axis=0) / 100
-
-xs = np.arange(1, len(ys_mean) + 1)
-plt.plot(xs, ys_mean)
-plt.fill_between(xs, ys_mean - ys_std, ys_mean + ys_std, alpha=0.2)
 plt.xlabel("Iteration")
 plt.ylabel("MSE")
-plt.title(f"GNP({n}, {p}) (walk_len={walk_len})")
-plt.savefig(f"plots/gnp-{walk_len}.pdf")
+plt.title(f"GNP({n}, {p})")
+plt.legend()
+plt.savefig(f"plots/gnp-{n}-{p}.pdf")
 
+
+# fabian: 4
 
