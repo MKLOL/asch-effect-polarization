@@ -3,24 +3,21 @@ import networkx as nx
 from mse_graph_calculator import *
 
 
-def greedyResistance(G, stoogeCount, baseResistance=0.5, change_nodes=None, verbose=True):
+def greedyResistance(G, s, stoogeCount, baseResistance=0.5, change_nodes=None, verbose=True):
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
 
-    s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
+    # s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
     stoogeDict = {}
     change_nodes = G.nodes if change_nodes is None else change_nodes
 
     x_start = None
     active_nodes = None
 
-    mse0s = []
+    mse0, x_start = approximateMseFaster(G, s, resistances=resistances, x_start=x_start, active_nodes=active_nodes)
+    mse0s = [mse0]
 
     for i in range(stoogeCount):
-        mse0, x_start = approximateMseFaster(G, s, resistances=resistances, x_start=x_start, active_nodes=active_nodes)
-        mse0s.append(mse0)
-        if verbose: print(f">>> Iteration {i}: MSE={mse0}")
-
         mse_max = mse0
         x_max = None
         r_max = None
@@ -45,7 +42,10 @@ def greedyResistance(G, stoogeCount, baseResistance=0.5, change_nodes=None, verb
 
         resistances[x_max] = r_max
         stoogeDict[x_max] = True
-        if verbose: print(f"\n>>> resistance({x_max})={r_max} (MSE={mse_max})")
+
+        mse0, x_start = approximateMseFaster(G, s, resistances=resistances, x_start=x_start, active_nodes=active_nodes)
+        mse0s.append(mse0)
+        if verbose: print(f"\nIteration {i}: MSE={mse0} (setting resistance({x_max})={r_max})")
 
     return mse0s # resistances, mse_max
 
