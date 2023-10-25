@@ -7,7 +7,10 @@ import networkx as nx
 # high-influence (? maybe 2nd degree) 
 
 
-def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5, x_start=None, active_nodes=None, verbose=False):
+def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5, x_start=None, active_nodes=None, targetNodes = None, verbose=False):
+    tnodes = targetNodes
+    if targetNodes is None:
+        tnodes = G.nodes
     n = len(G.nodes)
     x = slist if x_start is None else x_start
 
@@ -37,13 +40,16 @@ def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5
         if len(active_nodes) == 0: break
 
     # print(x)
-    x_mse = np.var(x)
+    x_mse = np.var([x[n] for n in tnodes])
     return x_mse, x
 
 
-def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5):
+def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5, targetNodes = None):
     n = len(G.nodes)
     x = slist
+    tnodes = targetNodes
+    if targetNodes is None:
+        tnodes = G.nodes
 
     for i in range(max_iterations):
         x_new = np.empty(n)
@@ -62,7 +68,7 @@ def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5)
         print(f"Iteration {i}: {np.var(x):.7f} (change={norm:.5f})")
 
     # print(x)
-    x_mse = np.var(x)
+    x_mse = np.var([x[n] for n in tnodes])
     return x_mse, x
 
 
@@ -90,7 +96,10 @@ def approximateMse(G, slist, resistances=None, max_iterations=100, eps=1e-5):
 
 
 
-def calculateMse(G, slist, numCompute = 100, resistances = None):
+def calculateMse(G, slist, numCompute = 100, resistances = None, targetNodes = None):
+    tnodes = targetNodes
+    if tnodes is None:
+        tnodes = G.nodes
     n = len(G.nodes)
     W = nx.adjacency_matrix(G).toarray()
     W = W / np.sum(W, axis=0)[:, None]
@@ -109,12 +118,12 @@ def calculateMse(G, slist, numCompute = 100, resistances = None):
         else:
             s = slist
         xs = X @ s
-        # print(xs)
-
-        avgs = np.mean(s)
-        avgx = np.mean(xs)
-        s_val.append(np.mean([(x-avgs) ** 2 for x in s]))
-        x_val.append(np.mean([(x-avgx) ** 2 for x in xs]))
+        st = [s[x] for x in tnodes]
+        xst = [xs[x] for x in tnodes]
+        avgs = np.mean(st)
+        avgx = np.mean(xst)
+        s_val.append(np.mean([(x-avgs) ** 2 for x in st]))
+        x_val.append(np.mean([(x-avgx) ** 2 for x in xst]))
 
     s_mse = np.mean(s_val)
     x_mse = np.mean(x_val)
