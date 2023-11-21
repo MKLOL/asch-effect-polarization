@@ -27,8 +27,8 @@ def probs(G):
 
 
 
-n = 10
-p = 0.1
+n = 40
+p = 0.2
 
 G = nx.erdos_renyi_graph(n, p)
 # G = nx.barabasi_albert_graph(n, 2)
@@ -54,20 +54,24 @@ for a, b in itertools.combinations(range(n), 2):
         rhs += 2 * Pa * Pb
         lhs_full += (Pa + Pab + Pba)**2 + (Pb + Pab + Pba)**2
         rhs_full += (Pa + Pb + Pab + Pba)**2
+    c = 0
 
+    if lhs_full >= rhs_full:
+        c = 1
     rows.append({
         "a": a,
         "b": b,
         "lhs":lhs,
         "rhs": rhs,
         "lhs_full": lhs_full,
-        "rhs_full": rhs_full
+        "rhs_full": rhs_full,
+        "comp": c
         })
 
 df = pd.DataFrame(rows)
 
 df["ratio_full"] = df.lhs_full / df.rhs_full
-print(df[["lhs_full", "rhs_full", "ratio_full"]].describe())
+print(df[["lhs_full", "rhs_full", "ratio_full", "comp"]].describe())
 
 """
 ix = (df.lhs_full / df.rhs_full).argmin()

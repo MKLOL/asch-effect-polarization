@@ -27,25 +27,28 @@ def makeGraphFromFile(filename):
         nodeCounts = [int(x) for x in line]
         G = nx.Graph()
         G.add_nodes_from(list(range(sum(nodeCounts))))
-        nodeStart = nodeCounts
+        nodeStart = []
         nodeStart.append(0)
+        nodeStart += nodeCounts
         for i in range(len(nodeCounts)):
             if i > 0:
                 nodeStart[i] += nodeCounts[i-1]
         M = int(file.readline())
-
+        print(M)
         for i in range(M):
             line = file.readline().split()
             n1 = int(line[0])
             n2 = int(line[1])
             p = float(line[2])
+            print(nodeStart)
+            print(nodeStart[n1], nodeStart[n1+1])
+            print(nodeStart[n2], nodeStart[n2+1])
             for nx1 in range(nodeStart[n1], nodeStart[n1+1]):
                 for nx2 in range(nodeStart[n2], nodeStart[n2+1]):
                     if nx1 == nx2: continue
+                    print(nx1, nx2)
                     rp = random.random()
                     print(rp, p)
                     if rp <= p:
                         G.add_edge(nx1, nx2)
         return G
-
-print(makeGraphFromFile("edgeconstruct.in"))
