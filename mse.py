@@ -1,12 +1,12 @@
 import random
 
+import networkx
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('Qt5Agg')
 import graph_construction
-from mse_stooges_greedy import *
-from mse_graph_calculator import *
-from mse_edges_greedy import *
 from mse_stooges_resistance_greedy import *
-from mse_stooges_mega_greeedy import *
-import networkx as nx
+
 """
 n = 44
 
@@ -15,20 +15,49 @@ G.add_edges_from(zip(G.nodes, G.nodes))
 edgeCount = 10
 
 print(getEdgeList(G, edgeCount))"""
-n = 150
-G = graph_construction.makeGraphFromFile("edge-twoclusters.in")
-#G = nx.erdos_renyi_graph(n, p=0.3)
-print(G)
+# G,s = graph_construction.makeGraphFromFile("edge-twoclusters.in")
+# G = networkx.erdos_renyi_graph(320, 0.2)
+G = networkx.star_graph(320)
 n = len(G.nodes)
+s = np.clip(np.random.normal(0.5, 0.5, n),0,1)
 G.add_edges_from(zip(G.nodes, G.nodes))
-targetNodes = random.sample(range(len(G.nodes)//2), k=40)
-print(targetNodes)
-s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
-ls = greedyResistance(G, s, 60, targetNodes=targetNodes)
+
+s = []
+s.append(1)
+for x in range(n-1):
+    s.append(0.498433)
+
+a, b = approximateMseFaster(G, s)
+y = [x * x for x in b]
+mn = np.mean(b)
+print(mn)
+z = [abs(x - mn) for x in b]
+plt.hist(b, bins=20, color='blue', edgecolor='black')
+plt.show()
+plt.hist(y, bins=20, color='blue', edgecolor='black')
+plt.show()
+plt.hist(z, bins=20, color='blue', edgecolor='black')
+plt.show()
+ls, resist = greedyResistance(G, s, 12)
 print(len(G.nodes))
-print(ls[-1]/ls[0])
+print("best ratio:", ls[-1]/ls[0])
 for i in range(len(ls)):
     print(ls[i]/ls[0], i)
+
+
+a, b = approximateMseFaster(G, s, resistances=resist)
+y = [x *x for x in b]
+mn = np.mean(b)
+print(mn)
+z = [abs(x - mn) for x in b]
+
+plt.hist(b, bins=20, color='blue', edgecolor='black')
+plt.show()
+plt.hist(y, bins=20, color='blue', edgecolor='black')
+plt.show()
+plt.hist(z, bins=20, color='blue', edgecolor='black')
+plt.show()
+
 
 print(ls)
 """
@@ -54,4 +83,7 @@ TWO CLUSTERS:
 1.3424463722417608 50
 1.4004436419655881 59
 
+
+star init and star final run on 320 star graph node. 
+Final ration 32. 
 """

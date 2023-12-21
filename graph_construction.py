@@ -1,5 +1,8 @@
 import networkx as nx
 import random
+import numpy as np
+import numpy.random
+
 
 def mergeGraphs(graph1, graph2):
     start = len(graph2.nodes())
@@ -25,30 +28,33 @@ def makeGraphFromFile(filename):
 
         line = file.readline().split()
         nodeCounts = [int(x) for x in line]
+        line2 = file.readline().split()
+        randomVals = [float(x) for x in line2]
+        xs = []
+        for x in range(len(nodeCounts)):
+            xs += list(np.clip(np.random.normal(randomVals[2*x], randomVals[2*x + 1], nodeCounts[x]), 0, 1))
+
         G = nx.Graph()
         G.add_nodes_from(list(range(sum(nodeCounts))))
         nodeStart = []
         nodeStart.append(0)
         nodeStart += nodeCounts
-        for i in range(len(nodeCounts)):
+        print(nodeStart)
+        for i in range(len(nodeStart)):
             if i > 0:
-                nodeStart[i] += nodeCounts[i-1]
+                nodeStart[i] += nodeStart[i-1]
+
+        print(nodeStart)
         M = int(file.readline())
-        print(M)
         for i in range(M):
             line = file.readline().split()
             n1 = int(line[0])
             n2 = int(line[1])
             p = float(line[2])
-            print(nodeStart)
-            print(nodeStart[n1], nodeStart[n1+1])
-            print(nodeStart[n2], nodeStart[n2+1])
             for nx1 in range(nodeStart[n1], nodeStart[n1+1]):
                 for nx2 in range(nodeStart[n2], nodeStart[n2+1]):
                     if nx1 == nx2: continue
-                    print(nx1, nx2)
                     rp = random.random()
-                    print(rp, p)
                     if rp <= p:
                         G.add_edge(nx1, nx2)
-        return G
+        return (G, xs)

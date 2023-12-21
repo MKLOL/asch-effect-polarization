@@ -11,7 +11,8 @@ def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5
     tnodes = targetNodes
     if targetNodes is None:
         tnodes = G.nodes
-    n = len(G.nodes)
+    if resistances is None:
+        resistances = [0.5] * len(slist)
     x = slist if x_start is None else x_start
 
     if active_nodes is None:

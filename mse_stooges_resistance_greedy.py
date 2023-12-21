@@ -52,5 +52,5 @@ def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change
         mse0s.append(mse0)
         if verbose: print(f"\nIteration {i}: MSE={mse0} (setting resistance({x_max})={r_max})")
 
-    return mse0s # resistances, mse_max
+    return mse0s, resistances # resistances, mse_max
 
