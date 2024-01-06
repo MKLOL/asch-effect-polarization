@@ -67,13 +67,14 @@ def lazy_greedy(f, xs, k):
         best_j = None
         print(f"{i}: f({', '.join(map(str, picked))})={current_val}")
         prev_gain = 0
-        for j in np.argsort(marginal_gains)[::-1]:
+        for r, j in enumerate(np.argsort(marginal_gains)[::-1]):
             if xs[j] in picked: continue
             if marginal_gains[j] <= prev_gain: break
             gain = f(picked + [xs[j]]) - current_val
             marginal_gains[j] = gain
             if best_j is None or gain > marginal_gains[best_j]: best_j = j
-            print(".", end="", flush=True)
+            print(f"\r{r}/{len(marginal_gains)}", end="")
+            # print(".", end="", flush=True)
             prev_gain = gain
 
         print("")
@@ -104,12 +105,14 @@ def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change
             resistances1[x] = r
 
         x_start = current_x_start.get(stooges[-2] if len(stooges) > 1 else None, None)
-        active_nodes = [stooges[-1][0]] if len(stooges) > 1 else None
+        active_nodes = [stooges[-1][0]] if len(stooges) > 0 else None
 
         mse, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances1, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes)
 
         current_x_start[stooges[-1] if len(stooges) > 0 else None] = x_start
         return mse
 
-    xs = [(i, r) for i in range(n) for r in [0, 1]] # None will be replaced with x_start
-    lazy_greedy(calc_mse, xs, stoogeCount)
+    xs = [(i, r) for i in range(n) for r in [0, 1]]
+    stooges = lazy_greedy(calc_mse, xs, stoogeCount)
+
+    return current_x_start[stooges[-1] if len(stooges) > 0 else None]

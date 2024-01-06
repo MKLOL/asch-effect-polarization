@@ -1,5 +1,6 @@
 import numpy as np
 import networkx as nx
+from cython_mse_graph_calculator import *
 
 
 # random nodes
@@ -7,6 +8,12 @@ import networkx as nx
 # high-influence (? maybe 2nd degree) 
 
 
+def approximateMseFaster(*args, targetNodes=None, **kwargs):
+    x = approximate_opinions(*args, **kwargs)
+    x_mse = np.var(x[targetNodes])
+    return x_mse, x
+
+"""
 def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5, x_start=None, active_nodes=None, targetNodes = None, verbose=False):
     tnodes = targetNodes
     if targetNodes is None:
@@ -43,6 +50,7 @@ def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5
     # print(x)
     x_mse = np.var([x[n] for n in tnodes])
     return x_mse, x
+"""
 
 
 def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5, targetNodes = None):
