@@ -115,4 +115,4 @@ def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change
     xs = [(i, r) for i in range(n) for r in [0, 1]]
     stooges = lazy_greedy(calc_mse, xs, stoogeCount)
 
-    return current_x_start[stooges[-1] if len(stooges) > 0 else None]
+    return current_x_start[stooges[-1] if len(stooges) > 0 else None], resistances

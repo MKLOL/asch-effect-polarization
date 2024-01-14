@@ -1,9 +1,7 @@
-import random
-
 import networkx
 import matplotlib
 import matplotlib.pyplot as plt
-matplotlib.use('Qt5Agg')
+#matplotlib.use('Qt5Agg')
 import graph_construction
 from mse_stooges_resistance_greedy import *
 import random
@@ -38,23 +36,31 @@ print(getEdgeList(G, edgeCount))"""
 seed = 111
 random.seed(seed)
 np.random.seed(seed)
-type = "GNP"
+"""
+Main types are: GNP, START, and anything else
+
+Anything else signifies you're reading from an .in file. 
+"""
+type = "COMMUNITIES"
 status = "pre"
 
 s = []
-#G,s = graph_construction.makeGraphFromFile("edge-twoclusters.in")
-G = networkx.erdos_renyi_graph(320, 0.2)
-#G = networkx.star_graph(320)
+G, s = graph_construction.makeGraphFromFile("smallCommunities.in")
+# G = networkx.erdos_renyi_graph(320, 0.2)
+# G = networkx.star_graph(320)
 
 
 n = len(G.nodes)
-target = random.sample(G.nodes, 2)
+target = None
+"""
+print(G.nodes)
+target = random.sample(sorted(G.nodes), 2)
 nx = list(G.neighbors(target[0]))
 ny = list(G.neighbors(target[1]))
 
 target += nx[:4]
-
 target += ny[:4]
+"""
 
 if type == "GNP" or type == "star_random":
     s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
@@ -90,6 +96,11 @@ print(len(G.nodes))
 print("best ratio:", ls[-1]/ls[0])
 for i in range(len(ls)):
     print(ls[i]/ls[0], i)
+
+plt.title(f"SEED {seed}, Plotting stooges vs MSE: {status} greedy {type}")
+plt.hist(ls, bins=20, color='blue', edgecolor='black', range=[0, 1])
+plt.savefig(f'{status}_{seed}_{type}_mse_by_time.png')
+
 
 
 a, b = approximateMseFaster(G, s, resistances=resist, targetNodes=target)
