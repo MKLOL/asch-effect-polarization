@@ -58,10 +58,14 @@ else:
         name = re.findall("\w+/\w+(?=\.tsv)", file)[0].replace("/", "-")
         print(">>>", file, name)
         G = read(file)
-        x = apply_greedy(G, num_stooges=0)
-        experiment_helpers.record_stats(x, name, "pre")
-        x = apply_greedy(G, num_stooges=10)
-        experiment_helpers.record_stats(x, name, "post-10")
-        x = apply_greedy(G, num_stooges=50)
-        experiment_helpers.record_stats(x, name, "post-50")
+        nx.write_graphml(G, f"graphml/{name}.graphml")
+        num_stooges = int(5 * np.log2(len(G.nodes)))
+        print(f"using up to {num_stooges} stooges")
 
+        xs = apply_greedy(G, num_stooges=num_stooges)
+        statss = []
+        for i, x in enumerate(xs):
+            stats = experiment_helpers.record_stats(x, name, f"post-{i}")
+            statss.append(stats)
+
+        experiment_helpers.plot_change(statss, name)
