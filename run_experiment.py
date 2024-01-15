@@ -62,7 +62,7 @@ else:
         num_stooges = int(5 * np.log2(len(G.nodes)))
         print(f"using up to {num_stooges} stooges")
 
-        xs = apply_greedy(G, num_stooges=num_stooges)
+        xs, _ = apply_greedy(G, num_stooges=num_stooges)
         statss = []
         for i, x in enumerate(xs):
             stats = experiment_helpers.record_stats(x, name, f"post-{i}")
