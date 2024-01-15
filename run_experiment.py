@@ -51,7 +51,8 @@ if len(sys.argv) > 1:
 else:
     import subprocess
     skip = True
-    for file in subprocess.check_output("find . -name '*.tsv' ! -name '*_*'", shell=True).decode("utf-8").split("\n"):
+    for file in subprocess.check_output("find . -name '*.tsv' ! -name '*[12]*'", shell=True).decode("utf-8").split("\n"):
+        # if "russia_march" not in file: continue
         file = file.strip()
         if not file: continue
         name = re.findall("\w+/\w+(?=\.tsv)", file)[0].replace("/", "-")
