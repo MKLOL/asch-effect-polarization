@@ -63,7 +63,7 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
 
 
 
-def lazy_greedy(f, xs, k, minimize=False):
+def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
     n = len(xs)
     picked = []
     current_val = f(picked)
@@ -83,8 +83,8 @@ def lazy_greedy(f, xs, k, minimize=False):
             sortedVals = enumerate(np.argsort(marginal_gains))
         for r, j in sortedVals:
             if xs[j] in picked: continue
-            if minimize and marginal_gains[j] >= prev_gain: break
-            if not minimize and marginal_gains[j] <= prev_gain: break
+            if minimize and marginal_gains[j] >= prev_gain * epsilon: break
+            if not minimize and marginal_gains[j] <= prev_gain / epsilon: break
             gain = f(picked + [xs[j]]) - current_val
             marginal_gains[j] = gain
             if not minimize and (best_j is None or gain > marginal_gains[best_j]): best_j = j
