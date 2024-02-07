@@ -41,12 +41,12 @@ Main types are: GNP, START, and anything else
 
 Anything else signifies you're reading from an .in file. 
 """
-type = "COMMUNITIES"
+type = "GNP"
 status = "pre"
 
 s = []
-G, s = graph_construction.makeGraphFromFile("smallCommunities.in")
-# G = networkx.erdos_renyi_graph(320, 0.2)
+# G, s = graph_construction.makeGraphFromFile("smallCommunities.in")
+G = networkx.erdos_renyi_graph(320, 0.2)
 # G = networkx.star_graph(320)
 
 
@@ -72,7 +72,7 @@ if type == "STAR":
     for x in range(n-1):
         s.append(0.498433)
 print(s, len(s), n)
-a, b = approximateMseFaster(G, s, targetNodes=target)
+a, b = approximateMseFaster(G, s)
 y = [x * x for x in b]
 mn = np.mean(b)
 print(mn)
@@ -91,9 +91,18 @@ plt.title(f"SEED {seed}, Plotting abs(x-avg), {status} greedy {type}")
 plt.hist(z, bins=20, color='blue', edgecolor='black', range=[0, 1])
 plt.savefig(f'{status}_{seed}_{type}_abs.png')
 
-ls, resist = greedyResistance(G, s, 12)
+_, resist, ls = greedyResistanceNegative(G, s, 12, positive=True)
 print(len(G.nodes))
 print("best ratio:", ls[-1]/ls[0])
+lx = [i / ls[0] for i in ls]
+print(ls)
+print(lx)
+plt.title(f"SEED {seed}, Plotting Stooges, {status} greedy {type}")
+
+plt.cla()
+plt.clf()
+plt.plot(lx, color='blue')
+plt.savefig(f'{status}_{seed}_{type}_stooge.png')
 for i in range(len(ls)):
     print(ls[i]/ls[0], i)
 
@@ -104,7 +113,7 @@ plt.savefig(f'{status}_{seed}_{type}_mse_by_time.png')
 
 
 a, b = approximateMseFaster(G, s, resistances=resist, targetNodes=target)
-y = [x *x for x in b]
+y = [x * x for x in b]
 mn = np.mean(b)
 print(mn)
 z = [abs(x - mn) for x in b]

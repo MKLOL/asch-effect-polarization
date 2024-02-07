@@ -21,9 +21,9 @@ def write_statistics_to_file(filename, data):
         file.write(f'Median: {median}\n')
         file.write(f'Quantiles (25th, 50th, 75th): {quantiles}\n')
 
-def record_stats(b, type=None, status=None, seed=None):
+def record_stats(ab, type=None, status=None, seed=None):
     print(f"saving {type}...")
-
+    b, _ = ab
     y = b * b
     mn = np.mean(b)
     print(mn)
