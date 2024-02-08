@@ -24,9 +24,11 @@ def write_statistics_to_file(filename, data):
 
     return mse, average, median
 
-def record_stats(b, type=None, status=None, seed=None):
+def record_stats(ab, type=None, status=None, seed=None):
     print(f"saving {type}:{status}...")
 
+    b = ab[0]
+    print(ab, "!!!!!", b)
     y = b * b
     mn = np.mean(b)
     print(mn)
