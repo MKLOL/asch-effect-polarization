@@ -4,7 +4,9 @@ from mse_graph_calculator import *
 
 
 
-def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True):
+def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None):
+    print("POSITIVE", positive)
+
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
     targetNodeSet = set()
@@ -64,6 +66,7 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
 
 
 def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
+    print("minimze 1111", minimize)
     n = len(xs)
     picked = []
     current_val = f(picked)
@@ -78,9 +81,9 @@ def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
         print(f"{i}: f({', '.join(map(str, picked))})={current_val}")
         prev_gain = 0
         if minimize:
-            sortedVals = enumerate(np.argsort(marginal_gains)[::-1])
-        else:
             sortedVals = enumerate(np.argsort(marginal_gains))
+        else:
+            sortedVals = enumerate(np.argsort(marginal_gains)[::-1])
         for r, j in sortedVals:
             if xs[j] in picked: continue
             if minimize and marginal_gains[j] >= prev_gain * epsilon: break
@@ -106,6 +109,7 @@ def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
 
 
 def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, initRes = None, verbose=True, minimize = False):
+    print("minimze 222", minimize)
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
     if (initRes is not None):
@@ -132,6 +136,6 @@ def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change
         return mse
 
     xs = [(i, r) for i in range(n) for r in [0, 1]]
-    stooges, intermediateMSEs = lazy_greedy(calc_mse, xs, stoogeCount, minimize)
-    return current_x_start[stooges[-1] if len(stooges) > 0 else None], resistances, intermediateMSEs
+    stooges, intermediateMSEs = lazy_greedy(calc_mse, xs, stoogeCount, minimize=minimize)
+    return [current_x_start[stooge] for stooge in [None] + stooges], resistances
 

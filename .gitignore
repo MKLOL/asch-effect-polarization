@@ -3,6 +3,8 @@ post_*.txt
 pre_*.txt
 *.png
 __pycache__/
+data/
+graphml/*
 *.py[cod]
 *$py.class
 .idea

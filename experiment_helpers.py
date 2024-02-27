@@ -4,34 +4,12 @@ import matplotlib.pyplot as plt
 import os
 # matplotlib.use('Qt5Agg')
 
-
-def write_statistics_to_file(filename, data):
-    # Perform computations
-    data_array = np.array(data)
-    mse = np.mean((data_array - np.mean(data_array)) ** 2)
-    average = np.mean(data_array)
-    total_sum = np.sum(data_array)
-    median = np.median(data_array)
-    quantiles = np.percentile(data_array, [25, 50, 75])
-
-    # Open the file once all computations are done
-    with open(filename, 'w') as file:
-        file.write(f'Mean Squared Error: {mse}\n')
-        file.write(f'Average: {average}\n')
-        file.write(f'Sum: {total_sum}\n')
-        file.write(f'Median: {median}\n')
-        file.write(f'Quantiles (25th, 50th, 75th): {quantiles}\n')
-
-    return mse, average, median
-
 def record_stats(ab, type=None, status=None, seed=None):
     print(f"saving {type}:{status}...")
 
-    b = ab[0]
-    print(ab, "!!!!!", b)
+    b = ab
     y = b * b
     mn = np.mean(b)
-    print(mn)
     z = [abs(x - mn) for x in b]
 
     try:

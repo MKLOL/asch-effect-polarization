@@ -2,11 +2,13 @@ import random
 
 import numpy as np
 import networkx as nx
-
+import matplotlib.pyplot as plt
+import networkx as nx
 
 def testSubmodularity(n, m):
-    G = nx.erdos_renyi_graph(n, 0.3)
-
+    G = nx.random_tree(n)
+    n = len(G.nodes)
+    print(n)
     M = nx.adjacency_matrix(G).toarray()
     M = M / np.sum(M, axis=0)[:, None]
 
@@ -15,7 +17,7 @@ def testSubmodularity(n, m):
     """
     def prob(z, y):
         c = 0
-        num_runs = 10000
+        num_runs = 20000
         for _ in range(num_runs):
             x = z
             while x != y:
@@ -27,7 +29,7 @@ def testSubmodularity(n, m):
         return c / num_runs
 
 
-    A = np.diag([random.choice([0.00001,1]) for x in range(n)])
+    A = np.diag([random.choice([0.66,1]) for _ in range(n)])
     I = np.eye(n)
     P = np.array([[prob(i, j) for j in range(n)] for i in range(n)])
 
@@ -41,23 +43,31 @@ def testSubmodularity(n, m):
         return fa**2 + fb**2, fab**2 + f0**2
 
 
-    for a in range(n):
-        for b in range(a + 1, n):
-            lhs = 0
-            rhs = 0
-            for v in range(n):
+    flhs = 0
+    frhs = 0
+    for v in range(n):
+        lhs = 0
+        rhs = 0
+        for a in range(n):
+            for b in range(a + 1, n):
                 l, r = f(a, b, v)
                 lhs += l
                 rhs += r
+        print(lhs, rhs)
+        flhs += lhs
+        frhs += rhs
+        if (lhs < rhs):
+            print("BAD FABIAN local")
 
     print("-"*50)
-    print("LHS:", lhs)
-    print("RHS:", rhs)
-    print(lhs-rhs)
-    if(lhs < rhs):
-        print("BAD FABIAN")
+    print("LHS:", flhs)
+    print("RHS:", frhs)
+    print(flhs-frhs)
+    if(flhs < frhs):
+        print("BAD FABIAN global")
 
-n = 10
+
+n = 12
 m = 5
 
 for _ in range(100):
