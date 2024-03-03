@@ -30,14 +30,14 @@ def create_d_regular_bipartite_graph(m, n, d):
 
     return B
 
-def getGraph(type):
-    seed = 12383
-    random.seed(seed)
-    np.random.seed(seed)
+def getGraph(type, seed=None):
+    if seed is not None:
+        random.seed(seed)
+        np.random.seed(seed)
 
 
     s = []
-    n = 320
+    n = 150
     if type == "GNP":
         G = nx.erdos_renyi_graph(n, 0.05)
     elif type == "d_regular":
