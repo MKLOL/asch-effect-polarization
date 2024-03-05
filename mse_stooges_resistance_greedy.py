@@ -4,7 +4,7 @@ from mse_graph_calculator import *
 
 
 
-def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None):
+def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None, return_xs=False):
     print("POSITIVE", positive)
 
     n = len(G.nodes)
@@ -20,6 +20,7 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
     active_nodes = G.nodes
 
     mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes)
+    xs = [x_start]
     mse0s = [mse0]
     stooges = []
     for i in range(stoogeCount):
@@ -58,9 +59,11 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
         stooges.append((r_max, x_max))
 
         mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes)
+        xs.append(x_start)
         mse0s.append(mse0)
         if verbose: print(f"\nIteration {i}: MSE={mse0} (setting resistance({x_max})={r_max})")
 
+    if return_xs: return xs
     return stooges, resistances, mse0s # resistances, mse_max
 
 
