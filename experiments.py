@@ -8,6 +8,7 @@ import random
 import re
 import math
 import time
+import cvxpy as cp
 
 from utils import *
 import tweet_loader
@@ -23,39 +24,70 @@ method_labels = {
     "maxdeg": "MaxDeg",
     "centrality": "Centrality",
     "greedy": "Greedy",
+    "naive-greedy": "NaiveGreedy",
 }
 
 
 
-def apply_greedy(G, s, num_stooges, minimize, method):
+def apply_greedy(G, s, num_stooges, minimize, method, resistances=None):
     if method == "greedy":
-        xs = greedyResistance(G, s, num_stooges, minimize=minimize)[0]
-        # xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, return_xs=True)
+        xs = greedyResistance(G, s, num_stooges, minimize=minimize, initRes=resistances)[0]
+
+    elif method =="naive-greedy":
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, initRes=resistances, return_xs=True)
 
     elif method == "maxdeg":
         h = dict(G.degree)
         ls = sorted([(h[x], x) for x in h])[::-1]
         nodes = [x[1] for x in ls]
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, return_xs=True)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=True)
 
     elif method == "random":
         nodes = list(G.nodes)
         random.shuffle(nodes)
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, return_xs=True)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=True)
 
     elif method == "centrality":
         h = nx.betweenness_centrality(G)
         ls = sorted([(h[x], x) for x in h])[::-1]
         nodes = [x[1] for x in ls]
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, return_xs=True)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=True)
 
     else:
         assert(False)
 
     return xs
+
+
+def opt(n, num_stooges, seed=None):
+    # create instance
+    G = nx.erdos_renyi_graph(n, 0.5)
+    s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
+    W = nx.adjacency_matrix(G).toarray()
+    W = W / np.sum(W, axis=0)[:, None]
+
+    # variables
+    x = cp.Variable(n)
+    is_stooge = cp.Variable(n, boolean=True)
+    a_mod = cp.Variable(n, nonneg=True)
+
+    # constraints
+    A = cp.diag(a_mod)
+    constr_eq = x == A @ s + (np.eye(n) - A) @ W @ x
+    constr_a1 = a_mod <= 1
+    constr_a2 = a_mod == 0.5
+
+    prob = cp.Problem(cp.Minimize(cp.sum(x)),
+            [constr_eq, constr_a1, constr_a2])
+    prob.solve(solver=cp.GUROBI)
+
+    import pdb; pdb.set_trace()
+
+    print(">>>", x.value)
+
 
 
 @memoize
@@ -178,7 +210,7 @@ def plot_synthetic(setup, savefig=None):
         plot_mse(df, label=method_labels[method])
 
     plt.legend()
-    plt.xlabel("numer of stooges")
+    plt.xlabel("number of stooges")
 
     savefig(f"{setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}")
 
@@ -222,20 +254,28 @@ def read(graph_file):
 
 @memoize
 def real_world(name, minimize, method, seed=None):
-    a, b = name.split("-")
-    file = f"./datasets/{a}/{b}/{a}.tsv"
-    print(">>>", file, name)
-    G = read(file)
+    if name == "vax":
+        import tweet_loader
+        G, resistances, initialOpinions = tweet_loader.getTweetData()
 
-    attr = nx.get_node_attributes(G, INTERNAL_OPINION)
-    initialOpinions = np.empty(len(attr))
-    initialOpinions[list(attr.keys())] = list(attr.values())
+    else:
+        a, b = name.split("-")
+        file = f"./datasets/{a}/{b}/{a}.tsv"
+        print(">>>", file, name)
+        G = read(file)
+        print(f"num nodes={len(G.nodes)}")
+        # if len(G.nodes) > 9000: return None
+
+        attr = nx.get_node_attributes(G, INTERNAL_OPINION)
+        initialOpinions = np.empty(len(attr))
+        initialOpinions[list(attr.keys())] = list(attr.values())
+        resistances = None
 
     # nx.write_graphml(G, f"graphml/{name}.graphml")
     num_stooges = int(5 * np.log2(len(G.nodes)))
     print(f"using up to {num_stooges} stooges")
 
-    xs = apply_greedy(G, initialOpinions, num_stooges, minimize=minimize, method=method)
+    xs = apply_greedy(G, initialOpinions, num_stooges, minimize=minimize, method=method, resistances=resistances)
     return {"s": initialOpinions, "fst": xs[0], "lst": xs[-1], "xs": xs}
 
 
@@ -260,8 +300,9 @@ def plot_real_world_opinions(setup, savefig=None):
 @genpath
 def plot_real_world_change(setup, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: real_world(row.dataset, row.minimize, row.method, seed=row.seed),
-                 axis=1, result_type='expand'))
+    df = papply(df, lambda row: real_world(row.dataset, row.minimize, row.method, seed=row.seed))
+    # df = df.join(df.astype("object").apply(lambda row: real_world(row.dataset, row.minimize, row.method, seed=row.seed),
+    #              axis=1, result_type='expand'))
 
     for method, df in df.groupby("method"):
         plot_mse(df, label=method_labels[method])

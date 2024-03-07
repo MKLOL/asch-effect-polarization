@@ -44,7 +44,9 @@ def papply(df, f, catch_err=True):
         df = df.astype("object")
         ddf = dd.from_pandas(df, npartitions=ncores)
         series = ddf.apply(f, axis=1, meta=pd.Series(dtype=object)).compute(scheduler='processes')
-        res = pd.DataFrame(list(series))
+        # res = pd.DataFrame(list(series))
+        ix = ~series.isnull()
+        res = pd.DataFrame(list(series[ix]), index=series[ix].index)
         # f0 = f(df.iloc[0])
         # f0 = {k: type(v) for k, v in f0.items()}
         # return df.join(x.apply(f, axis=1, result_type='expand', meta=f0).compute(scheduler='processes'))
