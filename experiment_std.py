@@ -1,27 +1,11 @@
 """
 File to test the intersection between stooges if we try to maximize / minimze.
 """
+import itertools
 
 from graph_creator import getGraph
 from mse_stooges_resistance_greedy import *
-import random
 import numpy as np
-import math
-
-def getDistGraph(G, s, stoogeCount):
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, stoogeCount, positive=True)
-    sps = set([x[1] for x in stoogePos])
-    layers = nx.bfs_layers(G, sps)
-    ret = dict()
-    a, b = approximateMseFaster(G, s, resistances=resistPos)
-    avg = sum(b) / len(b)
-    hd = dict(enumerate(layers))
-    for x in hd:
-        print(x)
-        ls = hd[x]
-        print(len(ls))
-        ret[x] = (len(ls), sum( (b[a] - avg) * (b[a] - avg) for a in ls))
-    return ret
 
 def makeData(lsPos, lsNeg):
     print("best full greedy ratio:", lsPos[-1] / lsPos[0])
@@ -38,28 +22,45 @@ def makeData(lsPos, lsNeg):
         print(lsNeg[i] / lsNeg[0], i)
     return lsNeg[-1]/lsNeg[0], lsPos[-1] / lsPos[0]
 
-def getRandom(G, s, stoogeCount):
-    nodes = list(G.nodes)
-    random.shuffle(nodes)
-    nodes = nodes[:stoogeCount]
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False)
-    stoogeNeg, resistNeg, lsNeg = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False, change_nodes=nodes)
-    return makeData(lsPos, lsNeg)
+def brut(G, s, stoogeCount):
+    allCases = list(itertools.combinations(G.nodes, stoogeCount))
+    best = 0
+    bst = None
+    for i in range(len(allCases)):
+        if (i % 1000 == 0):
+            print("SOVING FOR i", i, len(allCases))
+        x = allCases[i]
+        ax = greedyResistanceNegative(G, s, stoogeCount, positive=False, change_nodes=x)
+        if ax[2][-1] > best:
+            best = ax[2][-1]
+            bst = ax
 
-def getRandomCentrality(G, s, stoogeCount):
-    ls = sorted([(len(list(G.neighbors(x))), x) for x in G.nodes])[::-1]
-    nodes = [x[1] for x in ls]
-    nodes = nodes[:stoogeCount]
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False)
-    stoogeNeg, resistNeg, lsNeg = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False, change_nodes=nodes)
-    return makeData(lsPos, lsNeg)
+        if (i % 1000 == 0):
+            print(bst[2][-1] / bst[2][0])
+    return bst
+def getRandomBrut(G, s, stoogeCount):
+    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, stoogeCount, positive=False)
+
+    print("best full greedy ratio:", lsPos[-1] / lsPos[0])
+    stoogeNeg, resistNeg, lsNeg = brut(G, s, stoogeCount)
+
+    for i in range(len(lsPos)):
+        print(lsPos[i] / lsPos[0], i)
+
+    print("best random greedy ratio:", lsNeg[-1] / lsNeg[0])
+
+    print("best random greedy DIFF:", (lsNeg[-1] / lsNeg[0]) - (lsPos[-1] / lsPos[0]))
+    print("best random greedy ratio bests:", (lsNeg[-1] / lsNeg[0]) / (lsPos[-1] / lsPos[0]))
+    for i in range(len(lsNeg)):
+        print(lsNeg[i] / lsNeg[0], i)
+    return lsNeg[-1] / lsNeg[0], lsPos[-1] / lsPos[0]
 
 
 s1 = []
 s2 = []
-for i in range(10):
-    G, s = getGraph("star_random")
-    l1, l2 = getRandomCentrality(G, s, int(math.log2(len(G.nodes)) * 5))
+for i in range(5):
+    G, s = getGraph("GNP")
+    l1, l2 = getRandomBrut(G, s, int(2))
     s1.append(l1)
     s2.append(l2)
 

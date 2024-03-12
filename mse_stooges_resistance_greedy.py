@@ -5,7 +5,6 @@ from mse_graph_calculator import *
 
 
 def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None):
-    print("POSITIVE", positive)
 
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
@@ -46,11 +45,11 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
                         x_max = x
                         r_max = r
 
-            if verbose: print(".", end="", flush=True)
+            #if verbose: print(".", end="", flush=True)
             # if (n - x) % 10 == 0: print(f"    {n - x} remaining")
 
         if x_max is None:
-            print("x_max is none, thus breaking")
+            #print("x_max is none, thus breaking")
             break
 
         resistances[x_max] = r_max
@@ -59,7 +58,7 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
 
         mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes)
         mse0s.append(mse0)
-        if verbose: print(f"\nIteration {i}: MSE={mse0} (setting resistance({x_max})={r_max})")
+        #if verbose: print(f"\nIteration {i}: MSE={mse0} (setting resistance({x_max})={r_max})")
 
     return stooges, resistances, mse0s # resistances, mse_max
 

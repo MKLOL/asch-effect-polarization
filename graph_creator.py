@@ -37,7 +37,7 @@ def getGraph(type, seed=None):
 
 
     s = []
-    n = 150
+    n = 50
     if type == "GNP":
         G = nx.erdos_renyi_graph(n, 0.05)
     elif type == "d_regular":
