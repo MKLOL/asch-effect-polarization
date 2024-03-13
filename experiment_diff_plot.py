@@ -23,21 +23,7 @@ def getDistGraph(G, s, stoogeCount):
         print(len(ls))
         ret[x] = (len(ls), sum( (b[a] - avg) * (b[a] - avg) for a in ls))
     return ret
-def getRandom(G, s, stoogeCount):
-    nodes = list(G.nodes)
-    random.shuffle(nodes)
-    nodes = nodes[:stoogeCount]
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False)
-    stoogeNeg, resistNeg, lsNeg = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False, change_nodes=nodes)
-    print("best full greedy ratio:", lsPos[-1] / lsPos[0])
 
-    for i in range(len(lsPos)):
-        print(lsPos[i] / lsPos[0], i)
-
-    print("best random greedy ratio:", lsNeg[-1] / lsNeg[0])
-
-    for i in range(len(lsNeg)):
-        print(lsNeg[i] / lsNeg[0], i)
 
 def getRandomCentrality(G, s, stoogeCount):
     h = nx.betweenness_centrality(G)
