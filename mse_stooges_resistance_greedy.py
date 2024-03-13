@@ -4,12 +4,7 @@ from mse_graph_calculator import *
 
 
 
-<<<<<<< HEAD
-def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None):
-=======
 def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None, return_xs=False, initRes=None):
-    print("POSITIVE", positive)
->>>>>>> 1700d7dd36acf48f95db0981c28f278619758941
 
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
