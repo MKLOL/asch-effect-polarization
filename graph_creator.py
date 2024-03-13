@@ -48,10 +48,15 @@ def getGraph(type, seed=None):
         G = nx.random_tree(n)
     elif type == "smallCommunities":
         G, s = graph_construction.makeGraphFromFile("smallCommunities.in")
+    elif type == "grid":
+        G = nx.grid_graph(dim=(10, n//10))
+        G = nx.convert_node_labels_to_integers(G)
+    else:
+        assert(False)
 
     G.add_edges_from(zip(G.nodes, G.nodes))
     n = len(G.nodes)
-    if type == "GNP" or type == "star_random" or type == "tree":
+    if type == "GNP" or type == "star_random" or type == "tree" or type == "grid":
         s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
 
 

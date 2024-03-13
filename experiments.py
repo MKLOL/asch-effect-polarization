@@ -29,32 +29,32 @@ method_labels = {
 
 
 
-def apply_greedy(G, s, num_stooges, minimize, method, resistances=None):
+def apply_greedy(G, s, num_stooges, minimize, method, resistances=None, return_xs=True):
     if method == "greedy":
         xs = greedyResistance(G, s, num_stooges, minimize=minimize, initRes=resistances)[0]
 
     elif method =="naive-greedy":
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, initRes=resistances, return_xs=True)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, initRes=resistances, return_xs=return_xs)
 
     elif method == "maxdeg":
         h = dict(G.degree)
         ls = sorted([(h[x], x) for x in h])[::-1]
         nodes = [x[1] for x in ls]
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=True)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=return_xs)
 
     elif method == "random":
         nodes = list(G.nodes)
         random.shuffle(nodes)
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=True)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=return_xs)
 
     elif method == "centrality":
         h = nx.betweenness_centrality(G)
         ls = sorted([(h[x], x) for x in h])[::-1]
         nodes = [x[1] for x in ls]
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=True)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=return_xs)
 
     else:
         assert(False)
@@ -105,23 +105,26 @@ def plot_scalability(setup, savefig=None):
     df = df.join(df.astype("object").apply(lambda row: scalability(row.n, row.num_stooges, row.minimize, row.method, seed=row.seed),
                  axis=1, result_type='expand'))
 
-    for method, df in df.groupby("method"):
+    for method, df in df.groupby("method", sort=False):
         label = method_labels[method]
         x = df.groupby("n")
         mean = x["time"].mean()
         std = x["time"].std()
 
-        plt.plot(mean.index, mean, label=label)
+        plt.plot(mean.index, mean, label=label, **next_config()) # markevery=5
         plt.fill_between(mean.index, mean - std, mean + std, alpha=0.2)
 
-    plt.legend()
+    plt.yscale("log")
+    plt.ylim(None, 5000)
+    plt.legend(loc="upper left", ncol=2)
     plt.xlabel("$n$")
     plt.ylabel("time [seconds]")
     savefig()
 
 
-def getDistGraph(G, s, stoogeCount):
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, stoogeCount, positive=True)
+def getDistGraph(G, s, num_stooges, minimize, method):
+    if method == "greedy": method = "naive-greedy"
+    stoogePos, resistPos, lsPos = apply_greedy(G, s, num_stooges, minimize, method, resistances=None, return_xs=False)
     sps = set([x[1] for x in stoogePos])
     layers = nx.bfs_layers(G, sps)
     ret = dict()
@@ -133,11 +136,11 @@ def getDistGraph(G, s, stoogeCount):
     return layered_x, mean
 
 
-@memoize
+# @memoize
 def dists_test(graph_type, num_stooges, minimize, method, seed=None):
     G, s = graph_creator.getGraph(graph_type, seed=seed)
     if num_stooges is None: num_stooges = int(math.log2(len(G.nodes)) * 5)
-    layered_x, mean = getDistGraph(G, s, num_stooges)                           # TODO: add method
+    layered_x, mean = getDistGraph(G, s, num_stooges, minimize, method)
     return {"layered_x": layered_x, "mean": mean}
 
 
@@ -148,7 +151,7 @@ def dists_plot(setup, savefig=None):
                  axis=1, result_type='expand'))
 
     num_methods = len(setup["method"])
-    for i, (method, df) in enumerate(df.groupby("method")):
+    for i, (method, df) in enumerate(df.groupby("method", sort=False)):
         label = method_labels[method]
         layered_x = df["layered_x"].iloc[0]
         x_mean = df["mean"].iloc[0]
@@ -162,7 +165,7 @@ def dists_plot(setup, savefig=None):
     plt.legend()
     plt.xlabel("minimum distance to a stooge")
     plt.ylabel("MSE")
-    savefig()
+    savefig('min' if setup['minimize'][0] else 'max')
 
 
 @memoize
@@ -183,20 +186,24 @@ def synthetic(graph_type, init_type, num_stooges, minimize, method, seed=None):
     return {"s": s, "fst": xs[0], "lst": xs[-1], "xs": xs}
 
 
-def plot_mse(df, label=None):
-    num_stooges = max(map(len, df["xs"]))
+def plot_mse(df, show_var=False, label=None):
+    num_stooges = max([0] + [len(xs) for xs in df["xs"] if xs is not None]) # max(map(len, df["xs"]))
     rng = range(num_stooges)
     s = df["s"].iloc[0]
     true_mean = np.mean(s)
     MSE = np.empty((len(df), num_stooges))
     MSE[:] = np.nan
     for i, xs in enumerate(df["xs"]):
+        if xs is None: continue
         for j, x in enumerate(xs):
-            MSE[i, j] = np.mean((x - true_mean)**2)
+            if show_var:
+                MSE[i, j] = np.var(x)
+            else:
+                MSE[i, j] = np.mean((x - true_mean)**2)
 
     mean = np.nanmean(MSE, axis=0)
     std = np.nanstd(MSE, axis=0)
-    plt.plot(rng, mean, label=label)
+    plt.plot(rng, mean, label=label, **next_config(), markevery=5)
     plt.fill_between(rng, mean - std, mean + std, alpha=0.2)
 
 
@@ -206,8 +213,8 @@ def plot_synthetic(setup, savefig=None):
     df = df.join(df.astype("object").apply(lambda row: synthetic(row.graph_type, row.init_type, row.num_stooges, row.minimize, row.method, seed=row.seed),
                  axis=1, result_type='expand'))
 
-    for method, df in df.groupby("method"):
-        plot_mse(df, label=method_labels[method])
+    for method, df in df.groupby("method", sort=False):
+        plot_mse(df, show_var=True, label=method_labels[method])
 
     plt.legend()
     plt.xlabel("number of stooges")
@@ -254,9 +261,13 @@ def read(graph_file):
 
 @memoize
 def real_world(name, minimize, method, seed=None):
+    import tweet_loader
+
     if name == "vax":
-        import tweet_loader
-        G, resistances, initialOpinions = tweet_loader.getTweetData()
+        G, resistances, initialOpinions = tweet_loader.getTweetData("vax_gpt_labels.pkl")
+
+    elif name == "war":
+        G, resistances, initialOpinions = tweet_loader.getTweetData("war_gpt_labels.pkl")
 
     else:
         a, b = name.split("-")
@@ -264,7 +275,6 @@ def real_world(name, minimize, method, seed=None):
         print(">>>", file, name)
         G = read(file)
         print(f"num nodes={len(G.nodes)}")
-        # if len(G.nodes) > 9000: return None
 
         attr = nx.get_node_attributes(G, INTERNAL_OPINION)
         initialOpinions = np.empty(len(attr))
@@ -274,6 +284,10 @@ def real_world(name, minimize, method, seed=None):
     # nx.write_graphml(G, f"graphml/{name}.graphml")
     num_stooges = int(5 * np.log2(len(G.nodes)))
     print(f"using up to {num_stooges} stooges")
+
+    if len(G.nodes) > 10000 and method == "centrality":
+        print(f"ABORTING CENTRALITY BECAUSE {len(G.nodes)} ARE TOO MUCH")
+        return None
 
     xs = apply_greedy(G, initialOpinions, num_stooges, minimize=minimize, method=method, resistances=resistances)
     return {"s": initialOpinions, "fst": xs[0], "lst": xs[-1], "xs": xs}
@@ -304,8 +318,8 @@ def plot_real_world_change(setup, savefig=None):
     # df = df.join(df.astype("object").apply(lambda row: real_world(row.dataset, row.minimize, row.method, seed=row.seed),
     #              axis=1, result_type='expand'))
 
-    for method, df in df.groupby("method"):
-        plot_mse(df, label=method_labels[method])
+    for method, df in df.groupby("method", sort=False):
+        plot_mse(df, show_var=True, label=method_labels[method])
 
     """
     xs = df["xs"].iloc[0]

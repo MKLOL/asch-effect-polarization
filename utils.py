@@ -33,7 +33,7 @@ def memoize(func, verbose=True):
     return wrapper
 
 papply_settings = {
-    "parallel": True
+    "parallel": False
 }
 
 def papply(df, f, catch_err=True):

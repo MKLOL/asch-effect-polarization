@@ -7,18 +7,17 @@ from experiments import *
 if __name__ == '__main__':
     # freeze_support()
 
+
     """
     plot_scalability({
-        "n": np.linspace(100, 500, 5).astype(int),
+        "n": np.linspace(100, 500, 10).astype(int),
         "num_stooges": [50],
         "minimize": [True],
-        "method": ["random", "maxdeg", "centrality", "naive-greedy", "greedy"],
+        "method": ["random", "maxdeg", "centrality", "greedy", "naive-greedy"],
         "seed": range(5),
     })
     """
 
-
-    """
     dists_plot({
         "graph_type": ["grid"],
         "init_type": [None],
@@ -36,11 +35,10 @@ if __name__ == '__main__':
         "method": ["random", "maxdeg", "centrality", "greedy"],
         "seed": range(1),
     })
-    """
-
 
     """
-    for graph_type in ["GNP", "d_regular", "star_random", "tree", "smallCommunities", "STAR"]:
+
+    for graph_type in ["GNP", "d_regular", "star_random", "tree", "smallCommunities", "STAR", "grid"]:
         for minimize in [True, False]:
             plot_synthetic({
                 "graph_type": [graph_type],
@@ -59,21 +57,17 @@ if __name__ == '__main__':
                 "method": ["greedy"],
                 "seed": range(1),
             })
-    """
 
 
-
-    for dataset in ["leadersdebate-follow", "leadersdebate-retweet", "russia_march-follow", "russia_march-retweet", "vaxnovax-follow", "vaxnovax-retweet", "vax", "baltimore-follow", "baltimore-retweet", "beefban-follow", "beefban-retweet", "gunsense-follow", "gunsense-retweet"]:
+    for dataset in ["vaxnovax-follow", "vaxnovax-retweet", "leadersdebate-follow", "leadersdebate-retweet", "russia_march-follow", "russia_march-retweet", "baltimore-follow", "baltimore-retweet", "beefban-follow", "beefban-retweet", "gunsense-follow", "gunsense-retweet", "vax"]:
 
         for minimize in [True, False]:
-            """
             plot_real_world_opinions({
                 "dataset": [dataset],
                 "minimize": [minimize],
                 "method": ["greedy"],
                 "seed": range(1),
             })
-            """
 
             plot_real_world_change({
                 "dataset": [dataset],
@@ -82,6 +76,6 @@ if __name__ == '__main__':
                 "seed": range(5),
             })
 
-
+    """
 
 

@@ -3,7 +3,7 @@ import json
 import pickle
 import random
 
-def getTweetData():
+def getTweetData(opinion_pkl):
     random.seed(12345)
     # Read the file and create a graph
     G = nx.Graph()
