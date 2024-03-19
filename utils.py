@@ -33,7 +33,7 @@ def memoize(func, verbose=True):
     return wrapper
 
 papply_settings = {
-    "parallel": False
+    "parallel": True
 }
 
 def papply(df, f, catch_err=True):
@@ -81,6 +81,11 @@ def next_config():
     if current_markers is None: current_markers = markers.copy()
     if current_colors is None: current_colors = colors.copy()
     return {"marker": current_markers.pop(0), "color": current_colors.pop(0)}
+
+def reset_config():
+    global current_markers, current_colors
+    current_markers = None
+    current_colors = None
 
 
 def is_notebook():

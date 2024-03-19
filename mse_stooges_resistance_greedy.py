@@ -4,7 +4,9 @@ from mse_graph_calculator import *
 
 
 
-def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None, return_xs=False, initRes=None):
+def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None, return_xs=False, polarization=True, initRes=None):
+
+    theta = None if polarization else np.mean(initialOpinions)
 
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
@@ -20,7 +22,7 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
     x_start = None
     active_nodes = G.nodes
 
-    mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes)
+    mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes, theta=theta)
     xs = [x_start]
     mse0s = [mse0]
     stooges = []
@@ -36,7 +38,7 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
                 resistances1 = np.copy(resistances)
                 resistances1[x] = r
 
-                mse1, _ = approximateMseFaster(G, initialOpinions, resistances=resistances1, x_start=x_start, active_nodes=[x], targetNodes=targetNodes)
+                mse1, _ = approximateMseFaster(G, initialOpinions, resistances=resistances1, x_start=x_start, active_nodes=[x], targetNodes=targetNodes, theta=theta)
                 if positive:
                     if mse1 < mse_max:
                         mse_max = mse1
@@ -59,7 +61,7 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
         stoogeDict[x_max] = True
         stooges.append((r_max, x_max))
 
-        mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes)
+        mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes, theta=theta)
         xs.append(x_start)
         mse0s.append(mse0)
         #if verbose: print(f"\nIteration {i}: MSE={mse0} (setting resistance({x_max})={r_max})")
@@ -112,7 +114,10 @@ def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
 
 
 
-def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, initRes = None, verbose=True, minimize = False):
+def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, initRes = None, verbose=True, minimize = False, polarization=True, epsilon=1.1, eps=1e-5):
+
+    theta = None if polarization else np.mean(initialOpinions)
+
     print("minimze 222", minimize)
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
@@ -134,12 +139,13 @@ def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change
         x_start = current_x_start.get(stooges[-2] if len(stooges) > 1 else None, None)
         active_nodes = [stooges[-1][0]] if len(stooges) > 0 else None
 
-        mse, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances1, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes)
+        mse, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances1, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes, theta=theta, eps=eps)
 
         current_x_start[stooges[-1] if len(stooges) > 0 else None] = x_start
         return mse
 
     xs = [(i, r) for i in range(n) for r in [0, 1]]
-    stooges, intermediateMSEs = lazy_greedy(calc_mse, xs, stoogeCount, minimize=minimize)
+    stooges, intermediateMSEs = lazy_greedy(calc_mse, xs, stoogeCount, minimize=minimize, epsilon=epsilon)
+    for i, r in stooges: resistances[i] = r
     return [current_x_start[stooge] for stooge in [None] + stooges], resistances
 

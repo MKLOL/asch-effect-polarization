@@ -8,9 +8,9 @@ from cython_mse_graph_calculator import *
 # high-influence (? maybe 2nd degree) 
 
 
-def approximateMseFaster(*args, targetNodes=None, **kwargs):
+def approximateMseFaster(*args, targetNodes=None, theta=None, **kwargs):
     x = approximate_opinions(*args, **kwargs)
-    x_mse = np.var(x[targetNodes])
+    x_mse = np.var(x[targetNodes]) if theta is None else np.mean((x[targetNodes] - theta)**2)
     return x_mse, x
 
 """
