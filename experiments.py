@@ -249,8 +249,8 @@ def test_isect_pol_mse_change(setup, has_legend=True, savefig=None):
 
 
 @memoize
-def test_algo(graph_type, num_stooges, minimize, eps, phi, seed=None):
-    G, s = graph_creator.getGraph(graph_type, seed=seed)
+def test_algo(graph_type, num_stooges, minimize, eps, phi, n, seed=None):
+    G, s = graph_creator.getGraph(graph_type, seed=seed, n=n)
     start_time = time.time()
     _, resistances = apply_greedy(G, s, num_stooges, minimize, "greedy", resistances=None, return_xs=False, polarization=False, eps=eps, phi=phi)
     t = time.time() - start_time
@@ -262,7 +262,7 @@ def test_algo(graph_type, num_stooges, minimize, eps, phi, seed=None):
 @genpath
 def plot_algo(setup, group, ylim=(None, None), savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: test_algo(row.graph_type, row.num_stooges, row.minimize, row.eps, row.phi, seed=row.seed),
+    df = df.join(df.astype("object").apply(lambda row: test_algo(row.graph_type, row.num_stooges, row.minimize, row.eps, row.phi, row.n, seed=row.seed),
                  axis=1, result_type='expand'))
 
     fig, ax1 = plt.subplots()
@@ -300,6 +300,7 @@ def plot_algo(setup, group, ylim=(None, None), savefig=None):
     ax2.set_ylabel("time [seconds]")
     ax1.set_xlabel("\#stooges")
     ax1.legend(loc="upper left")
+    ax1.ticklabel_format(style='sci', axis='y', scilimits=(0,0), useMathText=True)
     savefig(f"{setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}-{group}")
 
 
@@ -408,7 +409,7 @@ def plot_mse(df, show_var=False, ax=plt, show_decomp=False, label=None):
 
 
 @genpath
-def plot_synthetic(setup, has_legend=True, side_by_side=False, savefig=None):
+def plot_synthetic(setup, has_legend=True, side_by_side=False, title=None, savefig=None):
     global current_markers, current_colors
 
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
@@ -429,13 +430,14 @@ def plot_synthetic(setup, has_legend=True, side_by_side=False, savefig=None):
 
     axs[0].set_ylabel('Polarization' if setup['polarization'][0] else 'MSE')
     if has_legend: axs[0].legend()
+    if title is not None: plt.title(f"{'Minimizing' if setup['minimize'][0] else 'Maximizing'} {'polarization' if setup['polarization'][0] else 'MSE'} for {title}", fontsize=16)
 
     init_type = "" if setup["init_type"][0] is None else f"-{setup['init_type'][0]}"
     savefig(f"{'ALL' if side_by_side else setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}{init_type}-{'pol' if setup['polarization'][0] else 'mse'}")
 
 
 @genpath
-def plot_synthetic_opinions(setup, savefig=None):
+def plot_synthetic_opinions(setup, title=None, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
     df = df.join(df.astype("object").apply(lambda row: synthetic(row.graph_type, row.init_type, row.num_stooges, row.minimize, row.method, row.polarization, seed=row.seed),
                  axis=1, result_type='expand'))
@@ -452,6 +454,7 @@ def plot_synthetic_opinions(setup, savefig=None):
         if not keep_axis: ax.get_xaxis().set_visible(False)
         ax.hist(x, bins=20, edgecolor='white', range=[0, 1])
 
+    if title is not None: plt.suptitle(f"{'Minimization' if setup['minimize'][0] else 'Maximization'} for {title}", fontsize=16, y=0.92)
     savefig(f"{setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}-{'pol' if setup['polarization'][0] else 'mse'}")
 
 
@@ -509,7 +512,7 @@ def real_world(name, minimize, method, polarization, seed=None):
 
 
 @genpath
-def plot_real_world_opinions(setup, savefig=None):
+def plot_real_world_opinions(setup, show_diff=False, title=True, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
     df = df.join(df.astype("object").apply(lambda row: real_world(row.dataset, row.minimize, row.method, row.polarization, seed=row.seed),
                  axis=1, result_type='expand'))
@@ -531,20 +534,34 @@ def plot_real_world_opinions(setup, savefig=None):
     pol_row = df[df["polarization"]].iloc[0]
     mse_row = df[~df["polarization"]].iloc[0]
 
-    for x, x_label, ax, keep_axis in [(mse_row["s"], "$s$", ax1, False), (mse_row["fst"], "$x^*$", ax2, False), (mse_row["lst"], "$x^*(\\textrm{MSE})$", ax3, False), (pol_row["lst"], "$x^*(\\textrm{polarization})$", ax4, True)]:
+    x0 = mse_row["fst"]
+
+    for x, x_label, ax, keep_axis, use_diff in [(mse_row["s"], "$s$", ax1, False, False), (mse_row["fst"], "$x^*$", ax2, False, False), (mse_row["lst"], "$x^*(\\textrm{MSE})$", ax3, False, True), (pol_row["lst"], "$x^*(\\textrm{polarization})$", ax4, True, True)]:
         text = ax.set_title(x_label, y=1.0, pad=-20)
         import matplotlib.patheffects as path_effects
         text.set_path_effects([path_effects.Stroke(linewidth=2, foreground='white'), path_effects.Normal()])
         ax.set_xlabel("opinions")
         if not keep_axis: ax.get_xaxis().set_visible(False)
-        ax.hist(x, bins=20, edgecolor='white', range=[0, 1])
+        if show_diff and use_diff:
+            hist_vals, _ = np.histogram(x, 20, range=[0, 1])
+            hist_vals0, _ = np.histogram(x0, 20, range=[0, 1])
+            hist_diff = hist_vals - hist_vals0
+            rng = (0.5 + np.arange(20)) / 20
+            for ix, color in [(hist_diff > 0, "green"), (hist_diff < 0, "red")]:
+                ax.hist(rng[ix], bins=20, range=[0, 1], weights=hist_diff[ix], color=color)
+            # import pdb; pdb.set_trace()
+        else:
+            ax.hist(x, bins=20, edgecolor='white', range=[0, 1])
+        # m = max(np.histogram(x, 20, range=(0,1))[0])
+        # ax.set_yticks([0, m])
 
+    if title: plt.suptitle(f"{'Minimization' if setup['minimize'][0] else 'Maximization'} for {setup['dataset'][0].title()}", fontsize=16, y=0.92)
     savefig(f"{setup['dataset'][0]}-{'min' if setup['minimize'][0] else 'max'}")
 
 
 
 @genpath
-def plot_real_world_change(setup, has_legend=True, show_decomp=False, savefig=None):
+def plot_real_world_change(setup, has_legend=True, show_decomp=False, title=True, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
     df = papply(df, lambda row: real_world(row.dataset, row.minimize, row.method, row.polarization, seed=row.seed))
     # df = df.join(df.astype("object").apply(lambda row: real_world(row.dataset, row.minimize, row.method, seed=row.seed),
@@ -575,6 +592,7 @@ def plot_real_world_change(setup, has_legend=True, show_decomp=False, savefig=No
     if has_legend: plt.legend()
     if not show_decomp: plt.ylabel('Polarization' if setup['polarization'][0] else 'MSE')
 
+    if title: plt.title(f"{'Minimizing' if setup['minimize'][0] else 'Maximizing'} {'polarization' if setup['polarization'][0] else 'MSE'} for {setup['dataset'][0].title()}", fontsize=16)
     savefig(f"{setup['dataset'][0]}-{'min' if setup['minimize'][0] else 'max'}-{'pol' if setup['polarization'][0] else 'mse'}{'-decomp' if show_decomp else ''}")
 
 

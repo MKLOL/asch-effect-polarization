@@ -7,27 +7,28 @@ from experiments import *
 if __name__ == '__main__':
     # freeze_support()
 
-
     """
     for graph_type in ["tree", "GNP", "smallCommunities"]:
         for minimize in [False, True]:
             plot_algo({
                 "graph_type": [graph_type],
+                "n": [10000],
                 "num_stooges": np.linspace(5, 50, 10, dtype=int),
                 "minimize": [False],
                 "eps": [1e-5],
                 "phi": [1.0, 1.1, 1.5, 100.0][::-1],
                 "seed": range(5),
-            }, "phi", ylim=(None, 3.05))
+            }, "phi", ylim=(None, 260)) # , ylim=(None, 3.05))
 
             plot_algo({
                 "graph_type": [graph_type],
+                "n": [10000],
                 "num_stooges": np.linspace(5, 50, 10, dtype=int),
                 "minimize": [False],
                 "eps": [1e-8, 1e-5, 1e-2, 1.0],
                 "phi": [1.1],
                 "seed": range(5),
-            }, "eps", ylim=(0.015, 1.85))
+            }, "eps", ylim=(None, 260)) # , ylim=(0.015, 1.85))
     """
 
     """
@@ -83,8 +84,9 @@ if __name__ == '__main__':
     """
 
 
-    synthetic_graph_types = ["GNP", "tree", "smallCommunities", "d_regular", "star_random", "STAR", "grid"]
-    synthetic_graph_types2 = synthetic_graph_types[:3]
+    synthetic_graph_types = ["GNP", "tree", "smallCommunities", "grid", "d_regular", "star_random", "STAR"]
+    synthetic_graph_labels = ["GNP$(150, 0.05)$", "RndTree(150)", "RndCommunities", "Grid", "d_regular", "star_random", "STAR"]
+    synthetic_graph_types2 = synthetic_graph_types[:4]
 
     """
     test_isect_pol_mse({
@@ -130,7 +132,6 @@ if __name__ == '__main__':
     })
     """
 
-    """
     plot_synthetic({
         "graph_type": ["smallCommunities"],
         "init_type": ["uniform", "gaussian", "exponential"],
@@ -138,24 +139,25 @@ if __name__ == '__main__':
         "minimize": [False],
         "method": ["random", "maxdeg", "centrality", "greedy"],
         "polarization": [False],
-        "normalize_var": [True],
         "seed": range(5),
     }, side_by_side=True)
-    """
+
+    exit()
+
 
     """
-    for graph_type in synthetic_graph_types:
+    for graph_label, graph_type in zip(synthetic_graph_labels, synthetic_graph_types):
         for minimize in [True, False]:
-
-            plot_synthetic({
-                "graph_type": [graph_type],
-                "init_type": [None],
-                "num_stooges": [50],
-                "minimize": [minimize],
-                "method": ["random", "maxdeg", "centrality", "greedy"],
-                "polarization": [False],
-                "seed": range(5),
-            }, has_legend=not minimize)
+            for polarization in [True, False]:
+                plot_synthetic({
+                    "graph_type": [graph_type],
+                    "init_type": [None],
+                    "num_stooges": [50],
+                    "minimize": [minimize],
+                    "method": ["random", "maxdeg", "centrality", "greedy"],
+                    "polarization": [polarization],
+                    "seed": range(5),
+                }, has_legend=not minimize, title=graph_label)
 
             plot_synthetic_opinions({
                 "graph_type": [graph_type],
@@ -165,7 +167,7 @@ if __name__ == '__main__':
                 "method": ["greedy"],
                 "polarization": [True, False],
                 "seed": range(1),
-            })
+            }, title=graph_label)
 
             for init_type in ["uniform", "gaussian", "exponential"]:
                 plot_synthetic({
@@ -180,6 +182,7 @@ if __name__ == '__main__':
     """
 
 
+
     real_world_datasets = ["vaxnovax-retweet", "leadersdebate-follow", "leadersdebate-retweet", "vax", "war", "russia_march-follow", "russia_march-retweet", "baltimore-follow", "baltimore-retweet", "beefban-follow", "beefban-retweet", "gunsense-follow", "gunsense-retweet", "vaxnovax-follow"]
 
 
@@ -191,8 +194,18 @@ if __name__ == '__main__':
         "seed": range(5),
     })
 
+    """
     for dataset in real_world_datasets:
         for minimize in [True, False]:
+
+            plot_real_world_opinions({
+                "dataset": [dataset],
+                "minimize": [minimize],
+                "method": ["greedy"],
+                "polarization": [True, False],
+                "seed": range(1),
+            }, show_diff=False)
+
             for polarization in [True, False]:
                 plot_real_world_change({
                     "dataset": [dataset],
@@ -209,13 +222,6 @@ if __name__ == '__main__':
                     "polarization": [polarization],
                     "seed": range(5),
                 }, has_legend=not minimize, show_decomp=True)
-
-            plot_real_world_opinions({
-                "dataset": [dataset],
-                "minimize": [minimize],
-                "method": ["greedy"],
-                "polarization": [True, False],
-                "seed": range(1),
-            })
+    """
 
 
