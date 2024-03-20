@@ -60,7 +60,7 @@ s1 = []
 s2 = []
 for i in range(5):
     G, s = getGraph("GNP")
-    l1, l2 = getRandomBrut(G, s, int(2))
+    l1, l2 = getRandomBrut(G, s, int(5))
     s1.append(l1)
     s2.append(l2)
 
