@@ -38,6 +38,7 @@ def brut(G, s, stoogeCount):
         if (i % 1000 == 0):
             print(bst[2][-1] / bst[2][0])
     return bst
+
 def getRandomBrut(G, s, stoogeCount):
     stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, stoogeCount, positive=False)
 
@@ -53,15 +54,18 @@ def getRandomBrut(G, s, stoogeCount):
     print("best random greedy ratio bests:", (lsNeg[-1] / lsNeg[0]) / (lsPos[-1] / lsPos[0]))
     for i in range(len(lsNeg)):
         print(lsNeg[i] / lsNeg[0], i)
-    return lsNeg[-1] / lsNeg[0], lsPos[-1] / lsPos[0]
+    print(">>>1", lsPos[-1] - lsNeg[-1])
+    return lsPos, lsNeg # return lsNeg[-1] / lsNeg[0], lsPos[-1] / lsPos[0]
 
 
+"""
 s1 = []
 s2 = []
 for i in range(5):
     G, s = getGraph("GNP")
-    l1, l2 = getRandomBrut(G, s, int(2))
+    l1, l2 = getRandomBrut(G, s, 2)
     s1.append(l1)
     s2.append(l2)
 
 print(np.average(s1), np.average(s2), np.std(s1), np.std(s2))
+"""
