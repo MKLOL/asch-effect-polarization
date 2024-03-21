@@ -132,6 +132,7 @@ if __name__ == '__main__':
     })
     """
 
+    """
     plot_synthetic({
         "graph_type": ["smallCommunities"],
         "init_type": ["uniform", "gaussian", "exponential"],
@@ -141,8 +142,7 @@ if __name__ == '__main__':
         "polarization": [False],
         "seed": range(5),
     }, side_by_side=True)
-
-    exit()
+    """
 
 
     """
@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
 
 
-    real_world_datasets = ["vaxnovax-retweet", "leadersdebate-follow", "leadersdebate-retweet", "vax", "war", "russia_march-follow", "russia_march-retweet", "baltimore-follow", "baltimore-retweet", "beefban-follow", "beefban-retweet", "gunsense-follow", "gunsense-retweet", "vaxnovax-follow"]
+    real_world_datasets = ["war", "vax", "vaxnovax-retweet", "leadersdebate-follow", "leadersdebate-retweet", "russia_march-follow", "russia_march-retweet", "baltimore-follow", "baltimore-retweet", "beefban-follow", "beefban-retweet", "gunsense-follow", "gunsense-retweet", "vaxnovax-follow"]
 
 
     plot_real_world_change({
@@ -191,7 +191,7 @@ if __name__ == '__main__':
         "minimize": [True, False],
         "method": ["random", "maxdeg", "centrality", "greedy"],
         "polarization": [True, False],
-        "seed": range(5),
+        "seed": range(6),
     })
 
     """
