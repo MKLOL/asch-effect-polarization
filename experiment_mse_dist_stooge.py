@@ -1,53 +1,42 @@
-"""
-File to test the intersection between stooges if we try to maximize / minimze.
-"""
-
-import matplotlib.pyplot as plt
-
-from graph_creator import getGraph
+from utils import getGraph
 from mse_stooges_resistance_greedy import *
 import math
 
+"""
+Takes a graph, initial opinions and stoogeCount and simulates the greedy algorithm
+Then for every nodes it computes the distances to closes stooge and returns for every distance average MSE.
+"""
 
-def getDistGraph(G, s, stoogeCount):
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, stoogeCount, positive=True)
-    sps = set([x[1] for x in stoogePos])
-    layers = nx.bfs_layers(G, sps)
+
+def getDistGraph(graph, initOpinions, stoogeCount):
+    stoogeInformation, resistPos, mse0s = greedyResistanceNegative(graph, initOpinions, stoogeCount, positive=True)
+    stoogeNodes = set([stoogeInfo[1] for stoogeInfo in stoogeInformation])
+    layers = nx.bfs_layers(graph, stoogeNodes)
     ret = dict()
-    a, b = approximateMseFaster(G, s, resistances=resistPos)
+    a, b = approximateMseFaster(graph, initOpinions, resistances=resistPos)
     avg = sum(b) / len(b)
     hd = dict(enumerate(layers))
-    for x in hd:
-        print(x)
-        ls = hd[x]
-        print(len(ls))
-        ret[x] = (len(ls), sum((b[a] - avg) * (b[a] - avg) for a in ls))
+    for node in hd:
+        distance = hd[node]
+        ret[node] = (len(distance), sum((b[a] - avg) * (b[a] - avg) for a in distance))
     return ret
 
 
-"""
-n = 44
-
-G = nx.erdos_renyi_graph(n, p=0.3)
-G.add_edges_from(zip(G.nodes, G.nodes))
-edgeCount = 10
-
-print(getEdgeList(G, edgeCount))"""
-allRet = dict()
+aggregateComputation = dict()
 expCount = 5
 for tt in range(expCount):
     G, s = getGraph("GNP")
     n = len(G.nodes)
     r = getDistGraph(G, s, int(math.log2(len(G.nodes)) * 5))
     for x in r:
-        if allRet.get(x) == None:
-            allRet[x] = (0, 0)
-        allRet[x] = (allRet[x][0] + r[x][0], allRet[x][1] + r[x][1])
+        if aggregateComputation.get(x) is None:
+            aggregateComputation[x] = (0, 0)
+        aggregateComputation[x] = (aggregateComputation[x][0] + r[x][0], aggregateComputation[x][1] + r[x][1])
 
-ls = [0] * len(allRet)
+averagePerDist = [0] * len(aggregateComputation)
 
-for x in allRet:
-    ls[x] = float(allRet[x][1] / allRet[x][0])
-print(ls)
-plt.plot(ls)
+for x in aggregateComputation:
+    averagePerDist[x] = float(aggregateComputation[x][1] / aggregateComputation[x][0])
+
+plt.plot(averagePerDist)
 plt.show()

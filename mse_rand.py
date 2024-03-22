@@ -1,12 +1,5 @@
-from mse_stooges_greedy import *
-from mse_graph_calculator import *
-from mse_edges_greedy import *
 from mse_stooges_resistance_greedy import *
-from mse_stooges_mega_greeedy import *
-import networkx as nx
 import matplotlib.pyplot as plt
-import pandas as pd
-import itertools
 from preselection import *
 import functools
 

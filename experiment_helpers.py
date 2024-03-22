@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import os
+
+from utils import write_statistics_to_file
+
+
 # matplotlib.use('Qt5Agg')
 
 def record_stats(ab, type=None, status=None, seed=None):

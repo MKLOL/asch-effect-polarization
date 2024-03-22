@@ -1,24 +1,11 @@
 """
-File to test the intersection between stooges if we try to maximize / minimze.
+Experiment to compare if the stooges selected for minimization are the same as the stooges selected for maximization.
 """
 
-from graph_creator import getGraph
+from utils import getGraph
 from mse_stooges_resistance_greedy import *
 import numpy as np
 import math
-
-
-
-
-
-"""
-n = 44
-
-G = nx.erdos_renyi_graph(n, p=0.3)
-G.add_edges_from(zip(G.nodes, G.nodes))
-edgeCount = 10
-
-print(getEdgeList(G, edgeCount))"""
 
 
 type = "smallCommunities"

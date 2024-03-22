@@ -1,7 +1,7 @@
 import random
 import math
 
-from graph_creator import getGraph
+from utils import getGraph
 from mse_graph_calculator import approximateMseFaster
 from mse_stooges_resistance_greedy import greedyResistanceNegative
 import numpy as np

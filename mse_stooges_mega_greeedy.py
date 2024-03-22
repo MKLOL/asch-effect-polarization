@@ -12,7 +12,6 @@ def greedyResistanceMega(G, stoogeCount, baseResistance = 0.5):
 
     for i in range(stoogeCount):
         _, mse0 = calculateMse(G, s, resistances=resistances)
-        #print(f"Iteration {i}: MSE={mse0}")
 
         mse_max = mse0
         x_max = None
@@ -40,7 +39,6 @@ def greedyResistanceMega(G, stoogeCount, baseResistance = 0.5):
         resistances[x_max] = r_max
         stoogeDict[x_max] = True
         s[x_max] = op_max
-        #print(f"  resistance({x_max})={r_max} (MSE={mse_max}) opinion({x_max})={op_max})")
 
     return resistances, mse_max
 

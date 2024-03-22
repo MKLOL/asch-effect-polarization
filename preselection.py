@@ -9,6 +9,7 @@ def preselect_walk(walk_len, G, k):
         nodes[i] = u
     return nodes
 
+
 preselect_walk_0 = lambda G, k: preselect_walk(0, G, k)
 preselect_walk_5 = lambda G, k: preselect_walk(5, G, k)
 preselect_walk_10 = lambda G, k: preselect_walk(10, G, k)

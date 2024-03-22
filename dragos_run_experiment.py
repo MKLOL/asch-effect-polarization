@@ -4,7 +4,6 @@ To use, download and unzip the datasets into a folder called datasets
 
 """
 
-
 import networkx as nx
 import pandas as pd
 import numpy as np
@@ -15,7 +14,6 @@ import tweet_loader
 from mse_stooges_resistance_greedy import *
 import experiment_helpers
 import re
-
 
 INTERNAL_OPINION = "internal_opinion"
 
@@ -38,14 +36,16 @@ def read(graph_file):
     print("graph created...")
     return nx.convert_node_labels_to_integers(G)
 
+
 def apply_greedy(G, num_stooges=50, minimize=False):
     attr = nx.get_node_attributes(G, INTERNAL_OPINION)
     initialOpinions = np.empty(len(attr))
     initialOpinions[list(attr.keys())] = list(attr.values())
-    return greedyResistance(G , initialOpinions, num_stooges, minimize)
+    return greedyResistance(G, initialOpinions, num_stooges, minimize)
+
 
 def apply_greedy_opin(G, res, opin, num_stooges=50, minimize=False):
-    return greedyResistance(G , opin, num_stooges, initRes=res, minimize=minimize)
+    return greedyResistance(G, opin, num_stooges, initRes=res, minimize=minimize)
 
 
 G, res, opin = tweet_loader.getTweetData("war_gpt_labels.pkl")

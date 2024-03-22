@@ -1,59 +1,13 @@
-import numpy as np
-import networkx as nx
 from cython_mse_graph_calculator import *
-
-
-# random nodes
-# high-degree nodes
-# high-influence (? maybe 2nd degree) 
 
 
 def approximateMseFaster(*args, targetNodes=None, theta=None, **kwargs):
     x = approximate_opinions(*args, **kwargs)
-    x_mse = np.var(x[targetNodes]) if theta is None else np.mean((x[targetNodes] - theta)**2)
+    x_mse = np.var(x[targetNodes]) if theta is None else np.mean((x[targetNodes] - theta) ** 2)
     return x_mse, x
 
-"""
-def approximateMseFaster(G, slist, resistances=None, max_iterations=20, eps=1e-5, x_start=None, active_nodes=None, targetNodes = None, verbose=False):
-    tnodes = targetNodes
-    if targetNodes is None:
-        tnodes = G.nodes
-    if resistances is None:
-        resistances = [0.5] * len(slist)
-    x = slist if x_start is None else x_start
 
-    if active_nodes is None:
-        active_nodes = G.nodes
-    active_nodes = set(active_nodes)
-
-    for i in range(max_iterations):
-        if verbose: print(f"Iteration {i}: {np.var(x):.7f}  #active={len(active_nodes)}")
-        x_new = np.copy(x)
-
-        for u in set(active_nodes):
-            x_u = resistances[u] * slist[u]
-            x_vs = 0
-            for v in G.neighbors(u): x_vs += x[v]
-            x_u += (1 - resistances[u]) * x_vs / len(G[u])
-            x_new[u] = x_u
-
-            change = abs(x_new[u] - x[u])
-            if change > eps:
-                for v in G.neighbors(u):
-                    active_nodes.add(v)
-            else:
-                active_nodes.remove(u)
-
-        x = x_new
-        if len(active_nodes) == 0: break
-
-    # print(x)
-    x_mse = np.var([x[n] for n in tnodes])
-    return x_mse, x
-"""
-
-
-def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5, targetNodes = None):
+def approximateMseFast(G, slist, resistances=None, max_iterations=100, eps=1e-5, targetNodes=None):
     n = len(G.nodes)
     x = slist
     tnodes = targetNodes
@@ -100,12 +54,11 @@ def approximateMse(G, slist, resistances=None, max_iterations=100, eps=1e-5):
         # print(f"Iteration {i}: {norm}")
 
     # print(x)
-    x_mse = np.var(x) # np.mean((x - np.mean(x))**2)
+    x_mse = np.var(x)  # np.mean((x - np.mean(x))**2)
     return x_mse
 
 
-
-def calculateMse(G, slist, numCompute = 100, resistances = None, targetNodes = None):
+def calculateMse(G, slist, numCompute=100, resistances=None, targetNodes=None):
     tnodes = targetNodes
     if tnodes is None:
         tnodes = G.nodes
@@ -131,11 +84,10 @@ def calculateMse(G, slist, numCompute = 100, resistances = None, targetNodes = N
         xst = [xs[x] for x in tnodes]
         avgs = np.mean(st)
         avgx = np.mean(xst)
-        s_val.append(np.mean([(x-avgs) ** 2 for x in st]))
-        x_val.append(np.mean([(x-avgx) ** 2 for x in xst]))
+        s_val.append(np.mean([(x - avgs) ** 2 for x in st]))
+        x_val.append(np.mean([(x - avgx) ** 2 for x in xst]))
 
     s_mse = np.mean(s_val)
     x_mse = np.mean(x_val)
 
     return (s_mse, x_mse)
-

@@ -14,9 +14,7 @@ from utils import *
 import tweet_loader
 from mse_stooges_resistance_greedy import *
 import experiment_helpers
-import graph_creator
-
-
+import utils
 
 INTERNAL_OPINION = "internal_opinion"
 method_labels = {
@@ -39,37 +37,42 @@ init_type_labels = {
 }
 
 
-
-def apply_greedy(G, s, num_stooges, minimize, method, resistances=None, polarization=True, return_xs=True, phi=1.1, eps=1e-5):
+def apply_greedy(G, s, num_stooges, minimize, method, resistances=None, polarization=True, return_xs=True, phi=1.1,
+                 eps=1e-5):
     if method == "greedy":
-        ans = greedyResistance(G, s, num_stooges, minimize=minimize, initRes=resistances, polarization=polarization, epsilon=phi, eps=eps)
+        ans = greedyResistance(G, s, num_stooges, minimize=minimize, initRes=resistances, polarization=polarization,
+                               epsilon=phi, eps=eps)
         xs = ans[0] if return_xs else ans
 
-    elif method =="naive-greedy":
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, initRes=resistances, return_xs=return_xs, polarization=polarization)
+    elif method == "naive-greedy":
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, initRes=resistances, return_xs=return_xs,
+                                      polarization=polarization)
 
     elif method == "maxdeg":
         h = dict(G.degree)
         ls = sorted([(h[x], x) for x in h])[::-1]
         nodes = [x[1] for x in ls]
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=return_xs, polarization=polarization)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances,
+                                      return_xs=return_xs, polarization=polarization)
 
     elif method == "random":
         nodes = list(G.nodes)
         random.shuffle(nodes)
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=return_xs, polarization=polarization)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances,
+                                      return_xs=return_xs, polarization=polarization)
 
     elif method == "centrality":
         h = nx.betweenness_centrality(G)
         ls = sorted([(h[x], x) for x in h])[::-1]
         nodes = [x[1] for x in ls]
         nodes = nodes[:num_stooges]
-        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances, return_xs=return_xs, polarization=polarization)
+        xs = greedyResistanceNegative(G, s, num_stooges, positive=minimize, change_nodes=nodes, initRes=resistances,
+                                      return_xs=return_xs, polarization=polarization)
 
     else:
-        assert(False)
+        assert (False)
 
     return xs
 
@@ -93,13 +96,13 @@ def opt(n, num_stooges, seed=None):
     constr_a2 = a_mod == 0.5
 
     prob = cp.Problem(cp.Minimize(cp.sum(x)),
-            [constr_eq, constr_a1, constr_a2])
+                      [constr_eq, constr_a1, constr_a2])
     prob.solve(solver=cp.GUROBI)
 
-    import pdb; pdb.set_trace()
+    import pdb;
+    pdb.set_trace()
 
     print(">>>", x.value)
-
 
 
 @memoize
@@ -114,8 +117,9 @@ def scalability(n, num_stooges, minimize, method, seed=None):
 @genpath
 def plot_scalability(setup, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: scalability(row.n, row.num_stooges, row.minimize, row.method, seed=row.seed),
-                 axis=1, result_type='expand'))
+    df = df.join(df.astype("object").apply(
+        lambda row: scalability(row.n, row.num_stooges, row.minimize, row.method, seed=row.seed),
+        axis=1, result_type='expand'))
 
     for method, df in df.groupby("method", sort=False):
         label = method_labels[method]
@@ -123,7 +127,7 @@ def plot_scalability(setup, savefig=None):
         mean = x["time"].mean()
         std = x["time"].std()
 
-        plt.plot(mean.index, mean, label=label, **next_config()) # markevery=5
+        plt.plot(mean.index, mean, label=label, **next_config())  # markevery=5
         plt.fill_between(mean.index, mean - std, mean + std, alpha=0.2)
 
     plt.yscale("log")
@@ -138,7 +142,7 @@ def plot_scalability(setup, savefig=None):
 def brute_force(n, num_stooges, seed=None):
     import experiment_std
     G, s = experiment_std.getGraph("GNP", seed, n=n)
-    l1, l2 = experiment_std.getRandomBrut(G, s, num_stooges)
+    l1, l2 = experiment_std.getRandomBrute(G, s, num_stooges)
     print(">>>2", l1[-1] - l2[-1])
     return {"greedy": l1, "brute": l2}
 
@@ -149,8 +153,8 @@ def plot_brute_force(setup, savefig=None):
     df = papply(df, lambda row: brute_force(row.n, row.num_stooges, seed=row.seed))
 
     num_stooges = setup["num_stooges"][0]
-    greedy = np.array([xs + [xs[-1]]*(1 + num_stooges - len(xs)) for xs in df["greedy"]])
-    brute = np.array([xs + [xs[-1]]*(1 + num_stooges - len(xs)) for xs in df["brute"]])
+    greedy = np.array([xs + [xs[-1]] * (1 + num_stooges - len(xs)) for xs in df["greedy"]])
+    brute = np.array([xs + [xs[-1]] * (1 + num_stooges - len(xs)) for xs in df["brute"]])
 
     for _ in range(3): next_config()
 
@@ -169,16 +173,19 @@ def plot_brute_force(setup, savefig=None):
 
 @memoize
 def isect_min_max(graph_type, polarization, seed=None):
-    G, s = graph_creator.getGraph(graph_type, seed=seed)
+    G, s = utils.getGraph(graph_type, seed=seed)
 
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), polarization=polarization, positive=True)
-    stoogeNeg, resistNeg, lsNeg = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), polarization=polarization, positive=False)
+    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5),
+                                                           polarization=polarization, positive=True)
+    stoogeNeg, resistNeg, lsNeg = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5),
+                                                           polarization=polarization, positive=False)
 
     sps = set([x[1] for x in stoogePos])
     sns = set([x[1] for x in stoogeNeg])
 
     jaccard = len(sps.intersection(sns)) / len(sps.union(sns))
     return {"jaccard": jaccard}
+
 
 def test_isect_min_max(setup):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
@@ -191,7 +198,7 @@ def test_isect_min_max(setup):
 
 @memoize
 def isect_pol_mse(graph_type, minimize, num_stooges=None, seed=None):
-    G, s = graph_creator.getGraph(graph_type, seed=seed)
+    G, s = utils.getGraph(graph_type, seed=seed)
 
     num_stooges = num_stooges or int(math.log2(len(G.nodes)) * 5)
     _, resistances_mse = apply_greedy(G, s, num_stooges, minimize, "greedy", return_xs=False, polarization=False)
@@ -200,24 +207,17 @@ def isect_pol_mse(graph_type, minimize, num_stooges=None, seed=None):
     stooges_mse = set(np.where(resistances_mse != 0.5)[0])
     stooges_pol = set(np.where(resistances_pol != 0.5)[0])
 
-    # stooge_pol, resistPos, lsPos = greedyResistanceNegative(G, s, num_stooges, polarization=True, positive=minimize)
-    # stooge_mse, resistNeg, lsNeg = greedyResistanceNegative(G, s, num_stooges, polarization=False, positive=minimize)
-
-    # sps = set([x[1] for x in stooge_pol])
-    # sns = set([x[1] for x in stooge_mse])
-
-    # jaccard = len(sps.intersection(sns)) / len(sps.union(sns))
-
     _, xs_pol = approximateMseFaster(G, s, resistances=resistances_pol, eps=1e-10)
     _, xs_mse = approximateMseFaster(G, s, resistances=resistances_mse, eps=1e-10)
     true_mean = np.mean(s)
-    mse_pol = np.mean((xs_pol - true_mean)**2)
-    mse_mse = np.mean((xs_mse - true_mean)**2)
+    mse_pol = np.mean((xs_pol - true_mean) ** 2)
+    mse_mse = np.mean((xs_mse - true_mean) ** 2)
     pol_pol = np.var(xs_pol)
     pol_mse = np.var(xs_mse)
 
     jaccard = len(stooges_mse.intersection(stooges_pol)) / len(stooges_mse.union(stooges_pol))
     return {"jaccard": jaccard, "mse_mse": mse_mse, "mse_pol": mse_pol, "pol_mse": pol_mse, "pol_pol": pol_pol}
+
 
 def test_isect_pol_mse(setup):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
@@ -226,7 +226,9 @@ def test_isect_pol_mse(setup):
     grp = df.groupby("graph_type")
     print(grp.mean())
     print(grp.std())
-    import pdb; pdb.set_trace()
+    import pdb;
+    pdb.set_trace()
+
 
 @genpath
 def test_isect_pol_mse_change(setup, has_legend=True, savefig=None):
@@ -239,7 +241,7 @@ def test_isect_pol_mse_change(setup, has_legend=True, savefig=None):
         mean = x.mean()
         std = x.std()
 
-        plt.plot(mean.index, mean, label=label, **next_config()) # markevery=5
+        plt.plot(mean.index, mean, label=label, **next_config())  # markevery=5
         plt.fill_between(mean.index, mean - std, mean + std, alpha=0.2)
 
     plt.ylabel("Jaccard index")
@@ -250,26 +252,30 @@ def test_isect_pol_mse_change(setup, has_legend=True, savefig=None):
 
 @memoize
 def test_algo(graph_type, num_stooges, minimize, eps, phi, n, seed=None):
-    G, s = graph_creator.getGraph(graph_type, seed=seed, n=n)
+    G, s = utils.getGraph(graph_type, seed=seed, n=n)
     start_time = time.time()
-    _, resistances = apply_greedy(G, s, num_stooges, minimize, "greedy", resistances=None, return_xs=False, polarization=False, eps=eps, phi=phi)
+    _, resistances = apply_greedy(G, s, num_stooges, minimize, "greedy", resistances=None, return_xs=False,
+                                  polarization=False, eps=eps, phi=phi)
     t = time.time() - start_time
     _, xs = approximateMseFaster(G, s, resistances=resistances, eps=1e-10)
     true_mean = np.mean(s)
-    mse = np.mean((xs - true_mean)**2)
+    mse = np.mean((xs - true_mean) ** 2)
     return {"mse": mse, "time": t}
+
 
 @genpath
 def plot_algo(setup, group, ylim=(None, None), savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: test_algo(row.graph_type, row.num_stooges, row.minimize, row.eps, row.phi, row.n, seed=row.seed),
-                 axis=1, result_type='expand'))
+    df = df.join(df.astype("object").apply(
+        lambda row: test_algo(row.graph_type, row.num_stooges, row.minimize, row.eps, row.phi, row.n, seed=row.seed),
+        axis=1, result_type='expand'))
 
     fig, ax1 = plt.subplots()
     ax2 = ax1.twinx()
 
     mean0 = None
-    for marker, color, (eps, df) in zip(["s", "v", "o", "p"], ["black", "tab:pink", "tab:cyan", "tab:brown"], df.groupby(group, sort=False)):
+    for marker, color, (eps, df) in zip(["s", "v", "o", "p"], ["black", "tab:pink", "tab:cyan", "tab:brown"],
+                                        df.groupby(group, sort=False)):
         eps_label = {1e-5: "10^{-5}", 1e-8: "0", 100.0: "\\infty"}.get(eps, eps)
         label = f"$\\{'epsilon' if group == 'eps' else 'phi'}={eps_label}$"
         grp_mse = df.groupby("num_stooges")["mse"]
@@ -279,11 +285,11 @@ def plot_algo(setup, group, ylim=(None, None), savefig=None):
         config = next_config()
         config["color"] = color
         config["marker"] = marker
-        ax1.plot(mean.index, mean0 - mean, label=label, **config) # markevery=5
+        ax1.plot(mean.index, mean0 - mean, label=label, **config)  # markevery=5
         # ax1.fill_between(mean.index, mean - std, mean + std, alpha=0.2)
         grp_time = df.groupby("num_stooges")["time"]
         mean = grp_time.mean()
-        ax2.plot(mean.index, mean, **config, linestyle="dashed") # markevery=5
+        ax2.plot(mean.index, mean, **config, linestyle="dashed")  # markevery=5
 
     # ax1.set_zorder(1)
     # ax1.set_frame_on(False)
@@ -300,14 +306,14 @@ def plot_algo(setup, group, ylim=(None, None), savefig=None):
     ax2.set_ylabel("time [seconds]")
     ax1.set_xlabel("\#stooges")
     ax1.legend(loc="upper left")
-    ax1.ticklabel_format(style='sci', axis='y', scilimits=(0,0), useMathText=True)
+    ax1.ticklabel_format(style='sci', axis='y', scilimits=(0, 0), useMathText=True)
     savefig(f"{setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}-{group}")
-
 
 
 def getDistGraph(G, s, num_stooges, minimize, method, polarization):
     if method == "greedy": method = "naive-greedy"
-    stoogePos, resistPos, lsPos = apply_greedy(G, s, num_stooges, minimize, method, resistances=None, return_xs=False, polarization=polarization)
+    stoogePos, resistPos, lsPos = apply_greedy(G, s, num_stooges, minimize, method, resistances=None, return_xs=False,
+                                               polarization=polarization)
     sps = set([x[1] for x in stoogePos])
     layers = nx.bfs_layers(G, sps)
     ret = dict()
@@ -321,7 +327,7 @@ def getDistGraph(G, s, num_stooges, minimize, method, polarization):
 
 # @memoize
 def dists_test(graph_type, num_stooges, minimize, method, polarization, seed=None):
-    G, s = graph_creator.getGraph(graph_type, seed=seed)
+    G, s = utils.getGraph(graph_type, seed=seed)
     if num_stooges is None: num_stooges = int(math.log2(len(G.nodes)) * 5)
     layered_x, mean = getDistGraph(G, s, num_stooges, minimize, method, polarization)
     return {"layered_x": layered_x, "mean": mean}
@@ -330,8 +336,10 @@ def dists_test(graph_type, num_stooges, minimize, method, polarization, seed=Non
 @genpath
 def dists_plot(setup, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: dists_test(row.graph_type, row.num_stooges, row.minimize, row.method, row.polarization, seed=row.seed),
-                 axis=1, result_type='expand'))
+    df = df.join(df.astype("object").apply(
+        lambda row: dists_test(row.graph_type, row.num_stooges, row.minimize, row.method, row.polarization,
+                               seed=row.seed),
+        axis=1, result_type='expand'))
 
     num_methods = len(setup["method"])
     for i, (method, df) in enumerate(df.groupby("method", sort=False)):
@@ -339,39 +347,39 @@ def dists_plot(setup, savefig=None):
         layered_x = df["layered_x"].iloc[0]
         x_mean = df["mean"].iloc[0]
 
-        mean = [np.mean((x - x_mean)**2) for x in layered_x]
-        std = [np.mean((x - x_mean)**2) for x in layered_x]
+        mean = [np.mean((x - x_mean) ** 2) for x in layered_x]
+        std = [np.mean((x - x_mean) ** 2) for x in layered_x]
 
-        ds = np.arange(len(mean)) + (i+1)/(1+num_methods) - 0.5
-        plt.bar(ds, mean, label=label, width=1/(1+num_methods), yerr=np.array(std)/10)
+        ds = np.arange(len(mean)) + (i + 1) / (1 + num_methods) - 0.5
+        plt.bar(ds, mean, label=label, width=1 / (1 + num_methods), yerr=np.array(std) / 10)
 
     plt.legend()
     plt.xlabel("minimum distance to a stooge")
     plt.ylabel("MSE")
-    savefig('min' if setup['minimize'][0] else 'max'-{'pol' if setup['polarization'][0] else 'mse'})
+    savefig('min' if setup['minimize'][0] else 'max' - {'pol' if setup['polarization'][0] else 'mse'})
 
 
 @memoize
 def synthetic(graph_type, init_type, num_stooges, minimize, method, polarization, normalize_var=False, seed=None):
-    G, s = graph_creator.getGraph(graph_type, seed=seed)
+    G, s = utils.getGraph(graph_type, seed=seed)
     n = len(G.nodes)
     if init_type is not None:
-        std = np.sqrt(1/12)
+        std = np.sqrt(1 / 12)
         if init_type == "uniform":
-            s = np.random.random(n) # var = 1/12
+            s = np.random.random(n)  # var = 1/12
         elif init_type == "gaussian":
             s = np.random.normal(0.5, std if normalize_var else 0.5, n)
         elif init_type == "exponential":
             s = np.random.exponential(std if normalize_var else 1.0, n)
         else:
-            assert(False)
+            assert (False)
 
     xs = apply_greedy(G, s, num_stooges, minimize, method, polarization=polarization)
     return {"s": s, "fst": xs[0], "lst": xs[-1], "xs": xs}
 
 
 def plot_mse(df, show_var=False, ax=plt, show_decomp=False, label=None):
-    num_stooges = max([0] + [len(xs) for xs in df["xs"] if xs not in [None, np.nan]]) # max(map(len, df["xs"]))
+    num_stooges = max([0] + [len(xs) for xs in df["xs"] if xs not in [None, np.nan]])  # max(map(len, df["xs"]))
     rng = range(num_stooges)
     s = df["s"].iloc[0]
     true_mean = np.mean(s)
@@ -386,8 +394,8 @@ def plot_mse(df, show_var=False, ax=plt, show_decomp=False, label=None):
         for j in range(num_stooges):
             x = xs[j] if j < len(xs) else xs[-1]
             VAR[i, j] = np.var(x)
-            MSE[i, j] = np.mean((x - true_mean)**2)
-            BIAS[i, j] = (np.mean(x) - true_mean)**2
+            MSE[i, j] = np.mean((x - true_mean) ** 2)
+            BIAS[i, j] = (np.mean(x) - true_mean) ** 2
 
     mean_VAR = np.nanmean(VAR, axis=0)
     std_VAR = np.nanstd(VAR, axis=0)
@@ -413,8 +421,12 @@ def plot_synthetic(setup, has_legend=True, side_by_side=False, title=None, savef
     global current_markers, current_colors
 
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: synthetic(row.graph_type, row.init_type, row.num_stooges, row.minimize, row.method, row.polarization, **({"normalize_var": row.normalize_var} if "normalize_var" in row else {}), seed=row.seed),
-                 axis=1, result_type='expand'))
+    df = df.join(df.astype("object").apply(
+        lambda row: synthetic(row.graph_type, row.init_type, row.num_stooges, row.minimize, row.method,
+                              row.polarization,
+                              **({"normalize_var": row.normalize_var} if "normalize_var" in row else {}),
+                              seed=row.seed),
+        axis=1, result_type='expand'))
 
     grp = df.fillna("-").groupby("init_type", sort=False)
     _, axs = plt.subplots(1, len(grp), sharey=True, figsize=((2 if side_by_side else 1) * 6.1, 4.0))
@@ -430,23 +442,30 @@ def plot_synthetic(setup, has_legend=True, side_by_side=False, title=None, savef
 
     axs[0].set_ylabel('Polarization' if setup['polarization'][0] else 'MSE')
     if has_legend: axs[0].legend()
-    if title is not None: plt.title(f"{'Minimizing' if setup['minimize'][0] else 'Maximizing'} {'polarization' if setup['polarization'][0] else 'MSE'} for {title}", fontsize=16)
+    if title is not None: plt.title(
+        f"{'Minimizing' if setup['minimize'][0] else 'Maximizing'} {'polarization' if setup['polarization'][0] else 'MSE'} for {title}",
+        fontsize=16)
 
     init_type = "" if setup["init_type"][0] is None else f"-{setup['init_type'][0]}"
-    savefig(f"{'ALL' if side_by_side else setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}{init_type}-{'pol' if setup['polarization'][0] else 'mse'}")
+    savefig(
+        f"{'ALL' if side_by_side else setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}{init_type}-{'pol' if setup['polarization'][0] else 'mse'}")
 
 
 @genpath
 def plot_synthetic_opinions(setup, title=None, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: synthetic(row.graph_type, row.init_type, row.num_stooges, row.minimize, row.method, row.polarization, seed=row.seed),
-                 axis=1, result_type='expand'))
+    df = df.join(df.astype("object").apply(
+        lambda row: synthetic(row.graph_type, row.init_type, row.num_stooges, row.minimize, row.method,
+                              row.polarization, seed=row.seed),
+        axis=1, result_type='expand'))
 
     _, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(6.1, 5.0))
     pol_row = df[df["polarization"]].iloc[0]
     mse_row = df[~df["polarization"]].iloc[0]
 
-    for x, x_label, ax, keep_axis in [(mse_row["s"], "$s$", ax1, False), (mse_row["fst"], "$x^*$", ax2, False), (mse_row["lst"], "$x^*(\\textrm{MSE})$", ax3, False), (pol_row["lst"], "$x^*(\\textrm{polarization})$", ax4, True)]:
+    for x, x_label, ax, keep_axis in [(mse_row["s"], "$s$", ax1, False), (mse_row["fst"], "$x^*$", ax2, False),
+                                      (mse_row["lst"], "$x^*(\\textrm{MSE})$", ax3, False),
+                                      (pol_row["lst"], "$x^*(\\textrm{polarization})$", ax4, True)]:
         text = ax.set_title(x_label, y=1.0, pad=-20)
         import matplotlib.patheffects as path_effects
         text.set_path_effects([path_effects.Stroke(linewidth=2, foreground='white'), path_effects.Normal()])
@@ -454,8 +473,10 @@ def plot_synthetic_opinions(setup, title=None, savefig=None):
         if not keep_axis: ax.get_xaxis().set_visible(False)
         ax.hist(x, bins=20, edgecolor='white', range=[0, 1])
 
-    if title is not None: plt.suptitle(f"{'Minimization' if setup['minimize'][0] else 'Maximization'} for {title}", fontsize=16, y=0.92)
-    savefig(f"{setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}-{'pol' if setup['polarization'][0] else 'mse'}")
+    if title is not None: plt.suptitle(f"{'Minimization' if setup['minimize'][0] else 'Maximization'} for {title}",
+                                       fontsize=16, y=0.92)
+    savefig(
+        f"{setup['graph_type'][0]}-{'min' if setup['minimize'][0] else 'max'}-{'pol' if setup['polarization'][0] else 'mse'}")
 
 
 def read(graph_file):
@@ -499,7 +520,6 @@ def real_world(name, minimize, method, polarization, seed=None):
         initialOpinions[list(attr.keys())] = list(attr.values())
         resistances = None
 
-    # nx.write_graphml(G, f"graphml/{name}.graphml")
     num_stooges = int(5 * np.log2(len(G.nodes)))
     print(f"using up to {num_stooges} stooges")
 
@@ -507,28 +527,17 @@ def real_world(name, minimize, method, polarization, seed=None):
         print(f"ABORTING CENTRALITY BECAUSE {len(G.nodes)} ARE TOO MUCH")
         return None
 
-    xs = apply_greedy(G, initialOpinions, num_stooges, minimize=minimize, method=method, resistances=resistances, polarization=polarization)
+    xs = apply_greedy(G, initialOpinions, num_stooges, minimize=minimize, method=method, resistances=resistances,
+                      polarization=polarization)
     return {"s": initialOpinions, "fst": xs[0], "lst": xs[-1], "xs": xs}
 
 
 @genpath
 def plot_real_world_opinions(setup, show_diff=False, title=True, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
-    df = df.join(df.astype("object").apply(lambda row: real_world(row.dataset, row.minimize, row.method, row.polarization, seed=row.seed),
-                 axis=1, result_type='expand'))
-
-    """
-    _, (ax1, ax2, ax3) = plt.subplots(3, figsize=(6.1, 4.5))
-    for x_name, x_label, ax, keep_axis in [("s", "$s$", ax1, False), ("fst", "$x^*$", ax2, False), ("lst", "$x^*_{\\textrm{stooge}}$", ax3, True)]:
-        x = df[x_name].iloc[0]
-
-        ax.set_title(x_label, y=1.0, pad=-20)
-        ax.set_xlabel("opinions")
-        if not keep_axis: ax.get_xaxis().set_visible(False)
-        ax.hist(x, bins=20, edgecolor='white', range=[0, 1])
-
-    savefig(f"{setup['dataset'][0]}-{'min' if setup['minimize'][0] else 'max'}-{'pol' if setup['polarization'][0] else 'mse'}")
-    """
+    df = df.join(df.astype("object").apply(
+        lambda row: real_world(row.dataset, row.minimize, row.method, row.polarization, seed=row.seed),
+        axis=1, result_type='expand'))
 
     _, (ax1, ax2, ax3, ax4) = plt.subplots(4, figsize=(6.1, 5.0))
     pol_row = df[df["polarization"]].iloc[0]
@@ -536,7 +545,10 @@ def plot_real_world_opinions(setup, show_diff=False, title=True, savefig=None):
 
     x0 = mse_row["fst"]
 
-    for x, x_label, ax, keep_axis, use_diff in [(mse_row["s"], "$s$", ax1, False, False), (mse_row["fst"], "$x^*$", ax2, False, False), (mse_row["lst"], "$x^*(\\textrm{MSE})$", ax3, False, True), (pol_row["lst"], "$x^*(\\textrm{polarization})$", ax4, True, True)]:
+    for x, x_label, ax, keep_axis, use_diff in [(mse_row["s"], "$s$", ax1, False, False),
+                                                (mse_row["fst"], "$x^*$", ax2, False, False),
+                                                (mse_row["lst"], "$x^*(\\textrm{MSE})$", ax3, False, True),
+                                                (pol_row["lst"], "$x^*(\\textrm{polarization})$", ax4, True, True)]:
         text = ax.set_title(x_label, y=1.0, pad=-20)
         import matplotlib.patheffects as path_effects
         text.set_path_effects([path_effects.Stroke(linewidth=2, foreground='white'), path_effects.Normal()])
@@ -549,66 +561,34 @@ def plot_real_world_opinions(setup, show_diff=False, title=True, savefig=None):
             rng = (0.5 + np.arange(20)) / 20
             for ix, color in [(hist_diff > 0, "green"), (hist_diff < 0, "red")]:
                 ax.hist(rng[ix], bins=20, range=[0, 1], weights=hist_diff[ix], color=color)
-            # import pdb; pdb.set_trace()
+
         else:
             ax.hist(x, bins=20, edgecolor='white', range=[0, 1])
-        # m = max(np.histogram(x, 20, range=(0,1))[0])
-        # ax.set_yticks([0, m])
 
-    if title: plt.suptitle(f"{'Minimization' if setup['minimize'][0] else 'Maximization'} for {setup['dataset'][0].title()}", fontsize=16, y=0.92)
+
+    if title: plt.suptitle(
+        f"{'Minimization' if setup['minimize'][0] else 'Maximization'} for {setup['dataset'][0].title()}", fontsize=16,
+        y=0.92)
     savefig(f"{setup['dataset'][0]}-{'min' if setup['minimize'][0] else 'max'}")
-
 
 
 @genpath
 def plot_real_world_change(setup, has_legend=True, show_decomp=False, title=True, savefig=None):
     df = pd.DataFrame(itertools.product(*setup.values()), columns=setup.keys())
     df = papply(df, lambda row: real_world(row.dataset, row.minimize, row.method, row.polarization, seed=row.seed))
-    # df = df.join(df.astype("object").apply(lambda row: real_world(row.dataset, row.minimize, row.method, seed=row.seed),
-    #              axis=1, result_type='expand'))
 
     for method, df in df.groupby("method", sort=False):
-        plot_mse(df, show_var=setup["polarization"][0], label=["MSE", "Polarization", "Bias$^2$"] if show_decomp else method_labels[method], show_decomp=show_decomp)
+        plot_mse(df, show_var=setup["polarization"][0],
+                 label=["MSE", "Polarization", "Bias$^2$"] if show_decomp else method_labels[method],
+                 show_decomp=show_decomp)
 
-    """
-    xs = df["xs"].iloc[0]
-    rng = range(len(xs))
-    s = df["s"].iloc[0]
-    true_mean = np.mean(s)
-    mse = []
-    bias = []
-    var = []
-    for x in xs:
-        mse.append(np.mean((x - true_mean)**2))
-        bias.append((np.mean(x) - true_mean)**2)
-        var.append(np.mean((x - np.mean(x))**2))
-
-    plt.plot(rng, mse, label="MSE")
-    plt.plot(rng, bias, label="Bias")
-    plt.plot(rng, var, label="Variance")
-    """
 
     plt.xlabel("\#stooges")
     if has_legend: plt.legend()
     if not show_decomp: plt.ylabel('Polarization' if setup['polarization'][0] else 'MSE')
 
-    if title: plt.title(f"{'Minimizing' if setup['minimize'][0] else 'Maximizing'} {'polarization' if setup['polarization'][0] else 'MSE'} for {setup['dataset'][0].title()}", fontsize=16)
-    savefig(f"{setup['dataset'][0]}-{'min' if setup['minimize'][0] else 'max'}-{'pol' if setup['polarization'][0] else 'mse'}{'-decomp' if show_decomp else ''}")
-
-
-
-
-
-"""
-if len(sys.argv) > 1:
-    G = read(sys.argv[1])
-    print(G)
-    apply_greedy(G, minimize=True)
-else:
-    import subprocess
-    skip = True
-    for file in subprocess.check_output("find . -name '*.tsv' ! -name '*[12]*'", shell=True).decode("utf-8").split("\n"):
-        # if "russia_march" not in file: continue
-        real_world(file)
-"""
-
+    if title: plt.title(
+        f"{'Minimizing' if setup['minimize'][0] else 'Maximizing'} {'polarization' if setup['polarization'][0] else 'MSE'} for {setup['dataset'][0].title()}",
+        fontsize=16)
+    savefig(
+        f"{setup['dataset'][0]}-{'min' if setup['minimize'][0] else 'max'}-{'pol' if setup['polarization'][0] else 'mse'}{'-decomp' if show_decomp else ''}")

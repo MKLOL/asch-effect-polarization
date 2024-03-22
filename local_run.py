@@ -1,9 +1,5 @@
 from experiments import *
 
-
-
-
-
 if __name__ == '__main__':
     # freeze_support()
 
@@ -83,9 +79,9 @@ if __name__ == '__main__':
     })
     """
 
-
     synthetic_graph_types = ["GNP", "tree", "smallCommunities", "grid", "d_regular", "star_random", "STAR"]
-    synthetic_graph_labels = ["GNP$(150, 0.05)$", "RndTree(150)", "RndCommunities", "Grid", "d_regular", "star_random", "STAR"]
+    synthetic_graph_labels = ["GNP$(150, 0.05)$", "RndTree(150)", "RndCommunities", "Grid", "d_regular", "star_random",
+                              "STAR"]
     synthetic_graph_types2 = synthetic_graph_types[:4]
 
     """
@@ -102,7 +98,6 @@ if __name__ == '__main__':
     })
     """
 
-
     """
     test_isect_pol_mse_change({
         "graph_type": synthetic_graph_types2,
@@ -118,7 +113,6 @@ if __name__ == '__main__':
         "seed": range(5),
     })
     """
-
 
     """
     plot_synthetic({
@@ -143,7 +137,6 @@ if __name__ == '__main__':
         "seed": range(5),
     }, side_by_side=True)
     """
-
 
     """
     for graph_label, graph_type in zip(synthetic_graph_labels, synthetic_graph_types):
@@ -181,10 +174,10 @@ if __name__ == '__main__':
                 })
     """
 
-
-
-    real_world_datasets = ["war", "vax", "vaxnovax-retweet", "leadersdebate-follow", "leadersdebate-retweet", "russia_march-follow", "russia_march-retweet", "baltimore-follow", "baltimore-retweet", "beefban-follow", "beefban-retweet", "gunsense-follow", "gunsense-retweet", "vaxnovax-follow"]
-
+    real_world_datasets = ["war", "vax", "vaxnovax-retweet", "leadersdebate-follow", "leadersdebate-retweet",
+                           "russia_march-follow", "russia_march-retweet", "baltimore-follow", "baltimore-retweet",
+                           "beefban-follow", "beefban-retweet", "gunsense-follow", "gunsense-retweet",
+                           "vaxnovax-follow"]
 
     plot_real_world_change({
         "dataset": real_world_datasets,
@@ -223,5 +216,3 @@ if __name__ == '__main__':
                     "seed": range(5),
                 }, has_legend=not minimize, show_decomp=True)
     """
-
-

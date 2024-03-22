@@ -22,8 +22,8 @@ def makeGraphFromFile(filename):
         # Split the line into parts. By default, split() uses whitespace as the delimiter.
         parts = first_line.split()
 
-        N = int(parts[0])
-        type = parts[1] # ignore for now lol
+        N = int(parts[0]) # ignore
+        type = parts[1] # ignore
         edge_type = parts[2] # ignore for now
 
         line = file.readline().split()
@@ -36,15 +36,12 @@ def makeGraphFromFile(filename):
 
         G = nx.Graph()
         G.add_nodes_from(list(range(sum(nodeCounts))))
-        nodeStart = []
-        nodeStart.append(0)
+        nodeStart = [0]
         nodeStart += nodeCounts
-        print(nodeStart)
         for i in range(len(nodeStart)):
             if i > 0:
                 nodeStart[i] += nodeStart[i-1]
 
-        print(nodeStart)
         M = int(file.readline())
         for i in range(M):
             line = file.readline().split()
@@ -57,4 +54,4 @@ def makeGraphFromFile(filename):
                     rp = random.random()
                     if rp <= p:
                         G.add_edge(nx1, nx2)
-        return (G, xs)
+        return G, xs

@@ -2,27 +2,10 @@
 File to test the intersection between stooges if we try to maximize / minimze.
 """
 
-from graph_creator import getGraph
+from utils import getGraph
 from mse_stooges_resistance_greedy import *
-import random
-import numpy as np
 import math
 import matplotlib.pyplot as plt
-
-def getDistGraph(G, s, stoogeCount):
-    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, stoogeCount, positive=True)
-    sps = set([x[1] for x in stoogePos])
-    layers = nx.bfs_layers(G, sps)
-    ret = dict()
-    a, b = approximateMseFaster(G, s, resistances=resistPos)
-    avg = sum(b) / len(b)
-    hd = dict(enumerate(layers))
-    for x in hd:
-        print(x)
-        ls = hd[x]
-        print(len(ls))
-        ret[x] = (len(ls), sum( (b[a] - avg) * (b[a] - avg) for a in ls))
-    return ret
 
 
 def getRandomCentrality(G, s, stoogeCount):

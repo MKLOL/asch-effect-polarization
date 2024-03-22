@@ -3,16 +3,14 @@ import json
 import pickle
 import random
 
+
 def getTweetData(opinion_pkl):
-    random.seed(12345)
-    # Read the file and create a graph
     G = nx.Graph()
     with open('final.edgelist', 'r') as file:
         for line in file:
             # Assuming each line is "NodeID1 NodeID2 Value" and they are separated by space
             node1, node2, _ = line.split()[:3]
             G.add_edge(node1, node2)
-
 
     # Load the pickle file
     with open(opinion_pkl, 'rb') as pickle_file:

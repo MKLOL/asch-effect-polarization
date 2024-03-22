@@ -7,7 +7,6 @@ from mse_stooges_resistance_greedy import *
 import random
 import numpy as np
 
-
 probLimit = 1e-10
 updateCount = 100000
 
@@ -30,6 +29,7 @@ def rw(cur_node, cur_prob, path, retOpinions, G, initialOpinions, stableOpinions
     path.append(cur_node)
     rw(nextNode, cur_prob, path, retOpinions, G, initialOpinions, stableOpinions, resistances, rootNode, cache)
 
+
 def update(G, initialOpinions, stableOpinions, resistances, node):
     ret = list(stableOpinions)
     cache = set()
@@ -37,6 +37,7 @@ def update(G, initialOpinions, stableOpinions, resistances, node):
         rw(node, 1.0, [], ret, G, initialOpinions, stableOpinions, resistances, node, cache)
     ret[node] = initialOpinions[node]
     return ret
+
 
 G = networkx.erdos_renyi_graph(320, 0.2)
 n = len(G.nodes)

@@ -1,15 +1,9 @@
-import networkx
-import matplotlib
-import matplotlib.pyplot as plt
-# matplotlib.use('Qt5Agg')
-import graph_construction
-from graph_creator import getGraph, write_statistics_to_file
 from mse_stooges_resistance_greedy import *
 import random
 import numpy as np
 import math
-from networkx.algorithms import bipartite
 
+from utils import getGraph, write_statistics_to_file
 
 """
 n = 44

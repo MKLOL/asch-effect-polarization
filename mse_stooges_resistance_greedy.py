@@ -85,7 +85,6 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
 
 
 def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
-    print("minimze 1111", minimize)
     n = len(xs)
     picked = []
     current_val = f(picked)
@@ -97,7 +96,6 @@ def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
     vals = [current_val]
     for i in range(k):
         best_j = None
-        print(f"{i}: f({', '.join(map(str, picked))})={current_val}")
         prev_gain = 0
         if minimize:
             sortedVals = enumerate(np.argsort(marginal_gains))
@@ -111,8 +109,6 @@ def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
             marginal_gains[j] = gain
             if not minimize and (best_j is None or gain > marginal_gains[best_j]): best_j = j
             if minimize and (best_j is None or gain < marginal_gains[best_j]): best_j = j
-            print(f"\r{r}/{len(marginal_gains)}", end="")
-            # print(".", end="", flush=True)
             prev_gain = gain
 
         print("")
@@ -128,19 +124,12 @@ def lazy_greedy(f, xs, k, minimize=False, epsilon = 1.1):
 
 
 def greedyResistance(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, initRes = None, verbose=True, minimize = False, polarization=True, epsilon=1.1, eps=1e-5):
-
     theta = None if polarization else np.mean(initialOpinions)
 
-    print("minimze 222", minimize)
     n = len(G.nodes)
     resistances = baseResistance * np.ones(n)
-    if (initRes is not None):
+    if initRes is not None:
         resistances = np.array(list(initRes))
-    targetNodeSet = set()
-    if targetNodes is not None:
-        targetNodeSet = set(targetNodes)
-    # s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
-    change_nodes = G.nodes if change_nodes is None else change_nodes
 
     current_x_start = {}
 

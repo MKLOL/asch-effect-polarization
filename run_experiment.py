@@ -4,18 +4,13 @@ To use, download and unzip the datasets into a folder called datasets
 
 """
 
-
-import networkx as nx
 import pandas as pd
-import numpy as np
 import sys
 from pathlib import Path
 
-import tweet_loader
 from mse_stooges_resistance_greedy import *
 import experiment_helpers
 import re
-
 
 INTERNAL_OPINION = "internal_opinion"
 
@@ -38,6 +33,7 @@ def read(graph_file):
     print("graph created...")
     return nx.convert_node_labels_to_integers(G)
 
+
 def apply_greedy(G, num_stooges=50, minimize=False):
     attr = nx.get_node_attributes(G, INTERNAL_OPINION)
     initialOpinions = np.empty(len(attr))
@@ -47,7 +43,8 @@ def apply_greedy(G, num_stooges=50, minimize=False):
 
 
 def apply_greedy_opin(G, res, opin, num_stooges=50, minimize=False):
-    return greedyResistance(G , opin, num_stooges, initRes=res, minimize=minimize)
+    return greedyResistance(G, opin, num_stooges, initRes=res, minimize=minimize)
+
 
 if len(sys.argv) > 1:
     G = read(sys.argv[1])
@@ -55,8 +52,10 @@ if len(sys.argv) > 1:
     apply_greedy(G, minimize=True)
 else:
     import subprocess
+
     skip = True
-    for file in subprocess.check_output("find . -name '*.tsv' ! -name '*[12]*'", shell=True).decode("utf-8").split("\n"):
+    for file in subprocess.check_output("find . -name '*.tsv' ! -name '*[12]*'", shell=True).decode("utf-8").split(
+            "\n"):
         # if "russia_march" not in file: continue
         file = file.strip()
         if not file: continue
