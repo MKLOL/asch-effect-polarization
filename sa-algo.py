@@ -84,32 +84,20 @@ def getBestSolution(G, s, r, stooges, initTemp=0.6, steps=40000):
         print(newValue, (retVal-curValue), curValue, retVal, starVal, retVal/starVal, len(ogs), len(set(stooges).intersection(ogs)))
     return retS, retVal
 
+NRT = 20
+finalList = []
+for tt in range(NRT):
+    G, s = getGraph("smallCommunities", n = 150)
+    print("WTF")
+    stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False, nrange=20)
+    for l in range(len(stoogePos)):
+        if len(finalList) <= l:
+            finalList.append([])
 
-G, s = getGraph("GNP")
-resistances = 0.5 * np.ones(len(G.nodes))
-N = 20
-ls = [x/N for x in range(0,N+1)]
-cnt = 0
-bcnt = 0
-for ax in range(1000):
-    mx = 0
-    mi = 0
-    for x in ls:
-        resistances[random.randint(0, len(G.nodes))-1] = x
-        curValue, x_start = approximateMseFaster(G, s, resistances)
-        if (mx < curValue):
-            mx = curValue
-            mi = x
-    if (mi == 0 or mi == 1.0):
-        cnt += 1
-    bcnt += 1
-    print(mx, mi)
-print(cnt / bcnt)
-"""stoogePos, resistPos, lsPos = greedyResistanceNegative(G, s, int(math.log2(len(G.nodes)) * 5), positive=False)
-
-print(lsPos[-1] / lsPos[0])
-print(stoogePos)
-newStooges, value = getBestSolution(G, s, resistances, stoogePos)
-
-print(lsPos[-1] / lsPos[0], value / lsPos[0], value / lsPos[-1], value, lsPos[-1])
-"""
+        finalList[l].append(stoogePos[l][0])
+    print(lsPos[-1] / lsPos[0])
+    print(stoogePos)
+import pickle
+print(finalList)
+with open("filepicketmy.txt", 'wb') as file:
+    pickle.dump(finalList, file)

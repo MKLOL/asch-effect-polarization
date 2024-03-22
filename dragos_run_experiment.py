@@ -48,7 +48,10 @@ def apply_greedy_opin(G, res, opin, num_stooges=50, minimize=False):
     return greedyResistance(G , opin, num_stooges, initRes=res, minimize=minimize)
 
 
-G, res, opin = tweet_loader.getTweetData()
+G, res, opin = tweet_loader.getTweetData("war_gpt_labels.pkl")
+print(len(G.nodes))
+print(len(G.edges))
+
 G.add_edges_from(zip(G.nodes, G.nodes))
 skip = True
 name = "test_dragos_max"

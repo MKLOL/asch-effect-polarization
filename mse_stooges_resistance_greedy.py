@@ -1,10 +1,11 @@
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
 from mse_graph_calculator import *
 
 
 
-def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None, return_xs=False, polarization=True, initRes=None):
+def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5, change_nodes=None, targetNodes = None, verbose=True, positive=True, nodesToTest=None, return_xs=False, polarization=True, initRes=None, nrange = 2):
 
     theta = None if polarization else np.mean(initialOpinions)
 
@@ -26,19 +27,23 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
     xs = [x_start]
     mse0s = [mse0]
     stooges = []
+    allVals = []
     for i in range(stoogeCount):
         mse_max = mse0
         x_max = None
         r_max = None
-
+        finalVals = []
         for x in change_nodes:
+            vals = []
             if x in stoogeDict: continue
             if x in targetNodeSet: continue
-            for r in [0, 1]:
+            for r in [x/nrange for x in range(nrange+1)]:
+
                 resistances1 = np.copy(resistances)
                 resistances1[x] = r
 
                 mse1, _ = approximateMseFaster(G, initialOpinions, resistances=resistances1, x_start=x_start, active_nodes=[x], targetNodes=targetNodes, theta=theta)
+                vals.append(mse1)
                 if positive:
                     if mse1 < mse_max:
                         mse_max = mse1
@@ -49,7 +54,8 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
                         mse_max = mse1
                         x_max = x
                         r_max = r
-
+            if x_max == x:
+                finalVals = vals
             #if verbose: print(".", end="", flush=True)
             # if (n - x) % 10 == 0: print(f"    {n - x} remaining")
 
@@ -60,7 +66,14 @@ def greedyResistanceNegative(G, initialOpinions, stoogeCount, baseResistance=0.5
         resistances[x_max] = r_max
         stoogeDict[x_max] = True
         stooges.append((r_max, x_max))
+        print(finalVals)
+        print(finalVals == sorted(finalVals))
+        print(r_max, "!!!!!")
+        if r_max != 0 and r_max != 1:
+            plt.plot(finalVals)
+            plt.show()
 
+        allVals.append(finalVals)
         mse0, x_start = approximateMseFaster(G, initialOpinions, resistances=resistances, x_start=x_start, active_nodes=active_nodes, targetNodes=targetNodes, theta=theta)
         xs.append(x_start)
         mse0s.append(mse0)

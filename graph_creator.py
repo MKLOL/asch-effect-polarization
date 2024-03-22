@@ -38,7 +38,7 @@ def getGraph(type, seed=None, n=150):
 
     s = []
     if type == "GNP":
-        G = nx.erdos_renyi_graph(n, 0.05)
+        G = nx.erdos_renyi_graph(n, 0.15)
     elif type == "d_regular":
         G = create_d_regular_bipartite_graph(n//2, n - n // 2, 20)
     elif type == "star_random" or type == "STAR":
@@ -56,7 +56,7 @@ def getGraph(type, seed=None, n=150):
     G.add_edges_from(zip(G.nodes, G.nodes))
     n = len(G.nodes)
     if type == "GNP" or type == "star_random" or type == "tree" or type == "grid":
-        s = np.clip(np.random.normal(0.5, 0.5, n), 0, 1)
+        s = [random.choice([0,0.45,0.55,1]) for x in range(n)]
 
 
     if type == "STAR":
