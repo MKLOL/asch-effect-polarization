@@ -15,7 +15,7 @@ def getTweetData(opinion_pkl):
 
 
     # Load the pickle file
-    with open('vax_gpt_labels.pkl', 'rb') as pickle_file:
+    with open(opinion_pkl, 'rb') as pickle_file:
         vax_gpt_labels = pickle.load(pickle_file)
 
     # Read and load the JSON file
