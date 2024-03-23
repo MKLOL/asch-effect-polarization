@@ -53,7 +53,7 @@ def getGraph(type, seed=None, n=150):
     elif type == "tree":
         G = nx.random_tree(n)
     elif type == "smallCommunities":
-        G, s = graph_construction.makeGraphFromFile("smallCommunities.in")
+        G, s = graph_construction.makeGraphFromFile("graph_descriptions/smallCommunities.in")
     elif type == "grid":
         G = nx.grid_graph(dim=(10, n//10))
         G = nx.convert_node_labels_to_integers(G)
