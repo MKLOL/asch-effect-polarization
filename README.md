@@ -34,6 +34,6 @@ can be via the setups found in [local_run.py](local_run.py)
 
 ## File Structure
 
-- (cython_mse_graph_calculator.pyx)[cython_mse_graph_calculator.pyx]: Computes approximate equilibirum opinions
-- (mse_stooges_resistance_greedy.py)[mse_stooges_resistance_greedy.py]: Contains our greedy approach
-- (graph_construction.py)[graph_construction.py]: Generate synthetic graphs and load real-world graphs
+- [cython_mse_graph_calculator.pyx](cython_mse_graph_calculator.pyx): Computes approximate equilibirum opinions
+- [mse_stooges_resistance_greedy.py](mse_stooges_resistance_greedy.py): Contains our greedy approach
+- [graph_construction.py](graph_construction.py): Generate synthetic graphs and load real-world graphs
