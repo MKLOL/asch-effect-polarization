@@ -8,7 +8,10 @@ through selecting stooges based on
 3. maximum degree, or
 4. betweenness-centrality.
 
-We further provide synthetic and real-world graphs on which we apply our methods.
+We further provide synthetic and real-world graphs on which we apply our methods. The
+real-world instances are due to [Garimella et al.](https://arxiv.org/pdf/1507.05224) and
+are available [online](https://github.com/gvrkiran/controversy-detection/tree/master/networks).
+To use these instances with our code, place them in the `datasets` folder.
 
 ## Running the Code
 
