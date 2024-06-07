@@ -6,7 +6,7 @@ import random
 
 def getTweetData(opinion_pkl):
     G = nx.Graph()
-    with open('final.edgelist', 'r') as file:
+    with open('graph_descriptions/final.edgelist', 'r') as file:
         for line in file:
             # Assuming each line is "NodeID1 NodeID2 Value" and they are separated by space
             node1, node2, _ = line.split()[:3]
@@ -17,7 +17,7 @@ def getTweetData(opinion_pkl):
         vax_gpt_labels = pickle.load(pickle_file)
 
     # Read and load the JSON file
-    with open('vax_final.json', 'r') as json_file:
+    with open('graph_descriptions/vax_final.json', 'r') as json_file:
         vax_data = json.load(json_file)
 
     node_to_average = {}

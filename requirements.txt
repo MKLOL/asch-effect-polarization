@@ -3,4 +3,7 @@ networkx
 scipy
 matplotlib
 pandas
+cvxpy
 PyQt5
+dask
+Cython

@@ -503,10 +503,10 @@ def real_world(name, minimize, method, polarization, seed=None):
     import tweet_loader
 
     if name == "vax":
-        G, resistances, initialOpinions = tweet_loader.getTweetData("vax_gpt_labels.pkl")
+        G, resistances, initialOpinions = tweet_loader.getTweetData("graph_descriptions/vax_gpt_labels.pkl")
 
     elif name == "war":
-        G, resistances, initialOpinions = tweet_loader.getTweetData("war_gpt_labels.pkl")
+        G, resistances, initialOpinions = tweet_loader.getTweetData("graph_descriptions/war_gpt_labels.pkl")
 
     else:
         a, b = name.split("-")
