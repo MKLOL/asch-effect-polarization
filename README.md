@@ -14,7 +14,7 @@ We further provide synthetic and real-world graphs on which we apply our methods
 
 Installation:
 
-> ???
+> pip install -r
 
 Compile cython:
 
